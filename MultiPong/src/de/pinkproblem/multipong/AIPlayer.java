@@ -8,4 +8,10 @@ public class AIPlayer extends Player {
 		return 0;
 	}
 
+	@Override
+	void process(long deltaTime) {
+		// TODO Auto-generated method stub
+
+	}
+
 }

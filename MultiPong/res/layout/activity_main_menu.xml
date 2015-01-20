@@ -19,6 +19,7 @@
         android:layout_above="@+id/joinButton"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="29dp"
+        android:onClick="hostGame"
         android:text="@string/hostGame" />
 
 </RelativeLayout>

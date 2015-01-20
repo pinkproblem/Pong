@@ -1,14 +1,22 @@
 package de.pinkproblem.multipong;
 
 public class Ball {
-	
+
 	private double xPosition;
 	private double yPosition;
-	
+
 	private double xDirection;
 	private double yDirection;
-	
+
 	private double velocity;
+
+	public double getxVelocity() {
+		return Math.cos(velocity);
+	}
+
+	public double getyVelocity() {
+		return Math.sin(velocity);
+	}
 
 	public double getxPosition() {
 		return xPosition;
