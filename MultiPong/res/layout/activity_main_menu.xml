@@ -4,9 +4,21 @@
     android:layout_height="match_parent"
     tools:context="${relativePackage}.${activityClass}" >
 
-    <TextView
+    <Button
+        android:id="@+id/joinButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hello_world" />
+        android:layout_alignLeft="@+id/hostButton"
+        android:layout_centerVertical="true"
+        android:text="@string/joinGame" />
+
+    <Button
+        android:id="@+id/hostButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/joinButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="29dp"
+        android:text="@string/hostGame" />
 
 </RelativeLayout>

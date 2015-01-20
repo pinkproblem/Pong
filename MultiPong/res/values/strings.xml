@@ -3,5 +3,7 @@
 
     <string name="app_name">MultiPong</string>
     <string name="hello_world">Hello world!</string>
+    <string name="hostGame">Host Game</string>
+    <string name="joinGame">Join Game</string>
 
 </resources>
