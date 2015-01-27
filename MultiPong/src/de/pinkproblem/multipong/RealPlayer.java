@@ -3,13 +3,7 @@ package de.pinkproblem.multipong;
 public class RealPlayer extends Player {
 
 	@Override
-	double getShieldPosition() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	void process(long deltaTime) {
+	void process(long deltaTime, Ball ball) {
 		// TODO Auto-generated method stub
 
 	}

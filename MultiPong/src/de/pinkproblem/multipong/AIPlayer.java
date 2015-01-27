@@ -2,16 +2,13 @@ package de.pinkproblem.multipong;
 
 public class AIPlayer extends Player {
 
-	@Override
-	double getShieldPosition() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+	private double velocity;
 
 	@Override
-	void process(long deltaTime) {
-		// TODO Auto-generated method stub
+	void process(long deltaTime, Ball ball) {
+		double pos = getShieldPosition();
+		if (ball.getyPosition() > pos) {
 
+		}
 	}
-
 }

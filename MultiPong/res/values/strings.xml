@@ -7,5 +7,6 @@
     <string name="joinGame">Join Game</string>
     <string name="title_activity_ingame">MultiPong</string>
     <string name="title_activity_host_ingame">MultiPong</string>
+    <string name="enableBt">Please enable bluetooth</string>
 
 </resources>

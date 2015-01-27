@@ -18,6 +18,10 @@ public class PongGame {
 	public PongGame() {
 		player = new Player[numberOfPlayers];
 		ball = new Ball();
+
+		for (int i = 0; i < numberOfPlayers; i++) {
+			player[i] = new AIPlayer();
+		}
 	}
 
 	// refresh positions and stuff using passed time
@@ -26,10 +30,9 @@ public class PongGame {
 		final long timeNow = SystemClock.uptimeMillis();
 		final long deltaTime = timeNow - timeStamp;
 
-		player[0].process(deltaTime);
-		player[1].process(deltaTime);
-		player[2].process(deltaTime);
-		player[3].process(deltaTime);
+		for (int i = 0; i < numberOfPlayers; i++) {
+			player[i].process(deltaTime, ball);
+		}
 
 		ball.setxPosition(ball.getxPosition() + deltaTime * ball.getxVelocity());
 		ball.setyPosition(ball.getyPosition() + deltaTime * ball.getyVelocity());
@@ -65,6 +68,10 @@ public class PongGame {
 
 	void endTurn() {
 		// TODO
+	}
+
+	public void setPlayer(int index, Player newPlayer) {
+		player[index] = newPlayer;
 	}
 
 	public byte[] getOutputArray() {

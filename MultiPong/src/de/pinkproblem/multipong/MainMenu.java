@@ -1,9 +1,11 @@
 package de.pinkproblem.multipong;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 public class MainMenu extends Activity {
 
@@ -17,6 +19,9 @@ public class MainMenu extends Activity {
 	// Remote display color mode. 0 = red, 1 = green, 2 = blue, 3 = RGB.
 	protected static final int COLOR_MODE = 0;
 
+	private static final int REQUEST_ENABLE_BT_HOST = 1;
+	private static final int REQUEST_ENABLE_BT_GUEST = 2;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -24,11 +29,32 @@ public class MainMenu extends Activity {
 
 		btConnection = new LEDMatrixBTConn(this, REMOTE_BT_DEVICE_NAME, X_SIZE,
 				Y_SIZE, COLOR_MODE, "MultiPong");
-
+		btConnection.prepare();
 	}
 
 	public void hostGame(View view) {
-		Intent intent = new Intent(this, IngameActivity.class);
-		startActivity(intent);
+		if (!btConnection.isEnabled()) {
+			Intent enableBtIntent = new Intent(
+					BluetoothAdapter.ACTION_REQUEST_ENABLE);
+			startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT_HOST);
+		}
+	}
+
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		switch (requestCode) {
+		case REQUEST_ENABLE_BT_HOST:
+			if (resultCode == RESULT_OK) {
+				Intent intent = new Intent(this, HostIngameActivity.class);
+				startActivity(intent);
+			} else if (resultCode == RESULT_CANCELED) {
+				showEnableBtToast();
+			}
+		}
+	}
+
+	private void showEnableBtToast() {
+		Toast toast = Toast.makeText(this, R.string.enableBt,
+				Toast.LENGTH_SHORT);
+		toast.show();
 	}
 }

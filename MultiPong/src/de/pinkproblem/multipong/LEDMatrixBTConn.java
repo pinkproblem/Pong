@@ -124,12 +124,12 @@ public class LEDMatrixBTConn {
 		}
 
 		// Check if Bluetooth is enabled on the device.
-		if (!mBluetoothAdapter.isEnabled()) {
-			Toast.makeText(mContext,
-					"Please enable your BT and re-run this program.",
-					Toast.LENGTH_LONG).show();
-			return false;
-		}
+		// if (!mBluetoothAdapter.isEnabled()) {
+		// Toast.makeText(mContext,
+		// "Please enable your BT and re-run this program.",
+		// Toast.LENGTH_LONG).show();
+		// return false;
+		// }
 
 		// Bluetooth adapter is ready to be used. Return true.
 		return true;
@@ -159,6 +159,14 @@ public class LEDMatrixBTConn {
 		}
 
 		return true;
+	}
+
+	public boolean isEnabled() {
+		if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	/**
