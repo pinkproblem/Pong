@@ -2,22 +2,25 @@ package de.pinkproblem.multipong;
 
 public class AIPlayer extends Player {
 
+	// the AI's movement speed
+	private double velocity;
+
 	public AIPlayer(double shieldxPosition, double shieldyPosition) {
 		super(shieldxPosition, shieldyPosition);
+		velocity = 1;
 	}
 
 	public AIPlayer(Direction horizontal, Direction vertical) {
 		super(horizontal, vertical);
-		// TODO Auto-generated constructor stub
+		velocity = 1;
 	}
-
-	private double velocity;
 
 	@Override
 	void process(long deltaTime, Ball ball) {
-		double pos = getShieldyPosition();
-		if (ball.getyPosition() > pos) {
-
-		}
+		double dst = ball.getyPosition() - getShieldCenter();
+		// normalize distance
+		// -> -1 = up, +1 = down
+		dst /= dst;
+		move(dst * deltaTime * velocity);
 	}
 }

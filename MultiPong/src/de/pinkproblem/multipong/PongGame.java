@@ -23,6 +23,7 @@ public class PongGame {
 		player = new Player[numberOfPlayers];
 		ball = new Ball();
 
+		// initialize with four AI Players
 		player[0] = new AIPlayer(LEFT, TOP);
 		player[1] = new AIPlayer(RIGHT, TOP);
 		player[2] = new AIPlayer(LEFT, BOTTOM);

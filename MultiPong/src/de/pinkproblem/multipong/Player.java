@@ -7,9 +7,12 @@ import static de.pinkproblem.multipong.Direction.TOP;
 
 public abstract class Player {
 
-	// upper border
 	private final double shieldxPosition;
+	// upper border
 	private double shieldyPosition;
+
+	private int topBorder;
+	private int bottomBorder;
 
 	public Player(Direction horizontal, Direction vertical) {
 
@@ -29,6 +32,8 @@ public abstract class Player {
 			shieldyPosition = PongGame.fieldSize - PongGame.fieldSize / 4
 					+ PongGame.shieldSize / 2;
 		}
+
+		setBorders(vertical);
 	}
 
 	public Player(double shieldxPosition, double shieldyPosition) {
@@ -37,12 +42,42 @@ public abstract class Player {
 		this.shieldyPosition = shieldyPosition;
 	}
 
+	private void setBorders(Direction dir) {
+		if (dir == TOP) {
+			topBorder = 0;
+			bottomBorder = PongGame.fieldSize / 2;
+		} else if (dir == BOTTOM) {
+			topBorder = PongGame.fieldSize / 2;
+			bottomBorder = PongGame.fieldSize;
+		} else {
+			throw new IllegalArgumentException();
+		}
+	}
+
 	public double getShieldyPosition() {
 		return shieldyPosition;
 	}
 
 	public void setShieldyPosition(double pos) {
 		shieldyPosition = pos;
+	}
+
+	// returns the middle point of the shield
+	public double getShieldCenter() {
+		return shieldyPosition + PongGame.shieldSize / 2;
+	}
+
+	// negative to move up, positive to move down
+	// wont move beyond borders
+	public void move(double dst) {
+		double tmpPosition = shieldyPosition + dst;
+		if (tmpPosition < topBorder) {
+			shieldyPosition = topBorder;
+		} else if (tmpPosition > bottomBorder) {
+			shieldyPosition = bottomBorder + PongGame.shieldSize;
+		} else {
+			shieldyPosition = tmpPosition;
+		}
 	}
 
 	public double getShieldxPosition() {
