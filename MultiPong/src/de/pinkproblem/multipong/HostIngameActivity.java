@@ -1,5 +1,7 @@
 package de.pinkproblem.multipong;
 
+import static de.pinkproblem.multipong.Direction.LEFT;
+import static de.pinkproblem.multipong.Direction.TOP;
 import android.os.Bundle;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -15,7 +17,7 @@ public class HostIngameActivity extends IngameActivity {
 		setContentView(R.layout.activity_host_ingame);
 
 		game = new PongGame();
-		me = new RealPlayer();
+		me = new RealPlayer(LEFT, TOP);
 		game.setPlayer(0, me);
 	}
 

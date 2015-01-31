@@ -1,5 +1,9 @@
 package de.pinkproblem.multipong;
 
+import static de.pinkproblem.multipong.Direction.BOTTOM;
+import static de.pinkproblem.multipong.Direction.LEFT;
+import static de.pinkproblem.multipong.Direction.RIGHT;
+import static de.pinkproblem.multipong.Direction.TOP;
 import android.os.SystemClock;
 
 public class PongGame {
@@ -19,9 +23,10 @@ public class PongGame {
 		player = new Player[numberOfPlayers];
 		ball = new Ball();
 
-		for (int i = 0; i < numberOfPlayers; i++) {
-			player[i] = new AIPlayer();
-		}
+		player[0] = new AIPlayer(LEFT, TOP);
+		player[1] = new AIPlayer(RIGHT, TOP);
+		player[2] = new AIPlayer(LEFT, BOTTOM);
+		player[3] = new AIPlayer(RIGHT, BOTTOM);
 	}
 
 	// refresh positions and stuff using passed time
@@ -94,25 +99,12 @@ public class PongGame {
 		array[x][y] = (byte) 255;
 
 		// set shields
-		// player1
-		int yShield = (int) Math.round(player[0].getShieldPosition());
-		for (int i = yShield; i < yShield + shieldSize; i++) {
-			array[1][i] = (byte) 255;
-		}
-		// player2
-		yShield = (int) Math.round(player[1].getShieldPosition());
-		for (int i = yShield; i < yShield + shieldSize; i++) {
-			array[fieldSize - 2][i] = (byte) 255;
-		}
-		// player3
-		yShield = (int) Math.round(player[2].getShieldPosition());
-		for (int i = yShield; i < yShield + shieldSize; i++) {
-			array[1][i] = (byte) 255;
-		}
-		// player4
-		yShield = (int) Math.round(player[3].getShieldPosition());
-		for (int i = yShield; i < yShield + shieldSize; i++) {
-			array[fieldSize - 2][i] = (byte) 255;
+		for (int i = 0; i < numberOfPlayers; i++) {
+			int yShield = (int) Math.round(player[i].getShieldyPosition());
+			int xShield = (int) Math.round(player[i].getShieldxPosition());
+			for (int j = yShield; j < yShield + shieldSize; j++) {
+				array[xShield][j] = (byte) 255;
+			}
 		}
 
 		return array;
