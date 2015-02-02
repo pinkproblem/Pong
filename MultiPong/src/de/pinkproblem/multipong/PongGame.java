@@ -31,26 +31,134 @@ public class PongGame {
 	}
 
 	// refresh positions and stuff using passed time
-	public void process() {
-
-		final long timeNow = SystemClock.uptimeMillis();
-		final long deltaTime = timeNow - timeStamp;
+	public void process(long deltaTime) {
 
 		for (int i = 0; i < numberOfPlayers; i++) {
 			player[i].process(deltaTime, ball);
 		}
 
-		ball.setxPosition(ball.getxPosition() + deltaTime * ball.getxVelocity());
-		ball.setyPosition(ball.getyPosition() + deltaTime * ball.getyVelocity());
+		testAndReflect();
 
-		if (ball.getxPosition() <= 0 || ball.getxPosition() >= fieldSize) {
-			endTurn();
-			return;
-		} else if (ball.getyPosition() >= fieldSize) {
-			reflect(Direction.BOTTOM);
-		} else if (ball.getyPosition() <= 0) {
-			reflect(Direction.TOP);
+		while (willCollide(deltaTime)) {
+			process(minTimeTillCollision(deltaTime));
 		}
+	}
+
+	private long getDeltaTimeAndUpdate() {
+		final long timeNow = SystemClock.uptimeMillis();
+		final long deltaTime = timeNow - timeStamp;
+		timeStamp = timeNow;
+		return deltaTime;
+	}
+
+	// prognose of x position
+	private double getNextXPosition(long deltaTime) {
+		return ball.getxPosition() + ball.getxVelocity() * deltaTime;
+	}
+
+	private double getNextYPosition(long deltaTime) {
+		return ball.getyPosition() + ball.getyVelocity() * deltaTime;
+	}
+
+	private boolean willCollide(long deltaTime) {
+		return predictCollision(deltaTime) != null
+				|| predictShieldCollision(deltaTime) != -1;
+	}
+
+	// return direction of next collision, null if no collision
+	private Direction predictCollision(long deltaTime) {
+		double x = getNextXPosition(deltaTime);
+		double y = getNextYPosition(deltaTime);
+
+		Direction poss1 = null;
+		Direction poss2 = null;
+
+		if (x <= 0) {
+			poss1 = LEFT;
+		} else if (x >= fieldSize) {
+			poss1 = RIGHT;
+		}
+		if (y <= 0) {
+			poss2 = TOP;
+		} else if (y >= fieldSize) {
+			poss2 = BOTTOM;
+		}
+
+		if (poss1 != null && poss2 != null) {
+			if (timeTillCollision(poss1) <= timeTillCollision(poss2)) {
+				return poss1;
+			} else {
+				return poss2;
+			}
+		} else if (poss1 != null) {
+			return poss1;
+		} else if (poss2 != null) {
+			return poss2;
+		} else {
+			return null;
+		}
+	}
+
+	// return index of player who reflects, -1 if no collision
+	// there may be a former collision with walls
+	private int predictShieldCollision(long deltaTime) {
+		double x = getNextXPosition(deltaTime);
+		double y = getNextYPosition(deltaTime);
+
+		for (int i = 0; i < numberOfPlayers; i++) {
+			double dst = x - player[i].getShieldxPosition();
+			if (i % 2 == 0) {
+				// player is left
+
+			}
+		}
+		// TODO
+		return 0;
+	}
+
+	private long timeTillCollision(int playerIndex) {
+		double x = player[playerIndex].getShieldxPosition();
+		return timeTillCollision(x, -1);
+	}
+
+	private long timeTillCollision(Direction dir) {
+		switch (dir) {
+		case BOTTOM:
+			return timeTillCollision(-1, fieldSize);
+		case LEFT:
+			return timeTillCollision(0, -1);
+		case RIGHT:
+			return timeTillCollision(fieldSize, -1);
+		case TOP:
+			return timeTillCollision(-1, 0);
+		default:
+			throw new IllegalArgumentException();
+		}
+	}
+
+	// One value marks the barrier, the other one must be -1
+	// Only works if there will definitely be a collision!!!!
+	private long timeTillCollision(double x, double y) {
+		if (x != -1 && y != -1) {
+			throw new IllegalArgumentException();
+		}
+
+		double xVector = ball.getxVelocity();
+		double yVector = ball.getyVelocity();
+
+		if (x != -1) {
+			double dst = Math.abs(x - ball.getxPosition());
+			return Math.round(dst / xVector);
+		} else {
+			double dst = Math.abs(y - ball.getyPosition());
+			return Math.round(dst / yVector);
+		}
+	}
+
+	private long minTimeTillCollision(long deltaTime) {
+		Direction dir = predictCollision(deltaTime);
+		int playerIndex = predictShieldCollision(deltaTime);
+		return Math.min(timeTillCollision(dir), timeTillCollision(playerIndex));
 	}
 
 	void reflect(Direction dir) {
@@ -69,6 +177,28 @@ public class PongGame {
 			break;
 		default:
 			throw new IllegalArgumentException();
+		}
+	}
+
+	private void testAndReflect() {
+		final double gap = 0.1;
+		if (ball.getxPosition() < gap) {
+			reflect(LEFT);
+		} else if (fieldSize - ball.getxPosition() < gap) {
+			reflect(RIGHT);
+		} else if (ball.getyPosition() < gap) {
+			reflect(TOP);
+		} else if (fieldSize - ball.getyPosition() < gap) {
+			reflect(BOTTOM);
+		}
+	}
+
+	void reflectOnShield(int playerIndex) {
+		if (playerIndex % 2 == 0) {
+			// player is left
+			reflect(LEFT);
+		} else {
+			reflect(RIGHT);
 		}
 	}
 

@@ -10,12 +10,44 @@ public class Ball {
 
 	private double velocity;
 
+	public Ball() {
+		this(PongGame.fieldSize / 2, PongGame.fieldSize / 2, 0, 0, 1);
+		// double xDir = Math.random();
+		// double yDir = Math.random();
+		double xDir = 1;
+		double yDir = 0;
+		xDirection = normalizeX(xDir, yDir);
+		yDirection = normalizeY(xDir, yDir);
+
+	}
+
+	public Ball(double xPosition, double yPosition, double xDirection,
+			double yDirection, double velocity) {
+		super();
+		this.xPosition = xPosition;
+		this.yPosition = yPosition;
+		this.xDirection = xDirection;
+		this.yDirection = yDirection;
+		this.velocity = velocity;
+	}
+
+	// normalize the direction vectors
+	private double normalizeX(double x, double y) {
+		// TODO
+		return x;
+	}
+
+	private double normalizeY(double x, double y) {
+		// TODO
+		return y;
+	}
+
 	public double getxVelocity() {
-		return Math.cos(velocity);
+		return xDirection * velocity;
 	}
 
 	public double getyVelocity() {
-		return Math.sin(velocity);
+		return yDirection * velocity;
 	}
 
 	public double getxPosition() {
