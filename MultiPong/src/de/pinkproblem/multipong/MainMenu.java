@@ -29,27 +29,42 @@ public class MainMenu extends Activity {
 
 		btConnection = new LEDMatrixBTConn(this, REMOTE_BT_DEVICE_NAME, X_SIZE,
 				Y_SIZE, COLOR_MODE, "MultiPong");
-		btConnection.prepare();
 	}
 
 	public void hostGame(View view) {
+		if (!btConnection.prepare()) {
+			Toast.makeText(this, "Bluetooth is not available on this device.",
+					Toast.LENGTH_LONG).show();
+			return;
+		}
 		if (!btConnection.isEnabled()) {
 			Intent enableBtIntent = new Intent(
 					BluetoothAdapter.ACTION_REQUEST_ENABLE);
 			startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT_HOST);
+			return;
 		}
+		if (!btConnection.checkIfDeviceIsPaired()) {
+			Toast.makeText(this, "Please pair the device.", Toast.LENGTH_LONG)
+					.show();
+			return;
+		}
+		startHost();
 	}
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		switch (requestCode) {
 		case REQUEST_ENABLE_BT_HOST:
 			if (resultCode == RESULT_OK) {
-				Intent intent = new Intent(this, HostIngameActivity.class);
-				startActivity(intent);
+				startHost();
 			} else if (resultCode == RESULT_CANCELED) {
 				showEnableBtToast();
 			}
 		}
+	}
+
+	private void startHost() {
+		Intent intent = new Intent(this, HostIngameActivity.class);
+		startActivity(intent);
 	}
 
 	private void showEnableBtToast() {

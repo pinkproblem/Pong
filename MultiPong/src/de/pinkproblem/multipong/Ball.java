@@ -31,6 +31,10 @@ public class Ball {
 		this.velocity = velocity;
 	}
 
+	public void move(double x, double y) {
+		// TODO
+	}
+
 	// normalize the direction vectors
 	private double normalizeX(double x, double y) {
 		// TODO

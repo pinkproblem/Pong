@@ -44,6 +44,10 @@ public class PongGame {
 		}
 	}
 
+	private void setBallPosition(long deltaTime) {
+		// TODO
+	}
+
 	private long getDeltaTimeAndUpdate() {
 		final long timeNow = SystemClock.uptimeMillis();
 		final long deltaTime = timeNow - timeStamp;
@@ -215,7 +219,7 @@ public class PongGame {
 		byte[][] field = getFieldArray();
 		for (int i = 0; i < fieldSize; i++) {
 			for (int j = 0; j < fieldSize; j++) {
-				output[i * fieldSize + j] = field[i][j];
+				output[j * fieldSize + i] = field[i][j];
 			}
 		}
 
