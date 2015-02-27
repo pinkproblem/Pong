@@ -11,8 +11,8 @@ public abstract class Player {
 	// upper border
 	private double shieldyPosition;
 
-	private int topBorder;
-	private int bottomBorder;
+	private double topBorder;
+	private double bottomBorder;
 
 	public Player(Direction horizontal, Direction vertical) {
 
@@ -27,10 +27,9 @@ public abstract class Player {
 			shieldxPosition = PongGame.fieldSize - 2;
 		}
 		if (vertical == TOP) {
-			shieldyPosition = PongGame.fieldSize / 4 + PongGame.shieldSize / 2;
+			setByCenter(PongGame.fieldSize / 4);
 		} else {
-			shieldyPosition = PongGame.fieldSize - PongGame.fieldSize / 4
-					+ PongGame.shieldSize / 2;
+			setByCenter(PongGame.fieldSize - PongGame.fieldSize / 4);
 		}
 
 		setBorders(vertical);
@@ -67,21 +66,40 @@ public abstract class Player {
 		return shieldyPosition + PongGame.shieldSize / 2;
 	}
 
+	/**
+	 * Center shield at given position. Wont move out of bounds.
+	 * 
+	 * @param y
+	 */
+	public void setByCenter(double y) {
+		shieldyPosition = correctToShieldBounds(y - PongGame.shieldSize / 2);
+	}
+
 	// negative to move up, positive to move down
 	// wont move beyond borders
 	public void move(double dst) {
-		double tmpPosition = shieldyPosition + dst;
-		if (tmpPosition < topBorder) {
-			shieldyPosition = topBorder;
-		} else if (tmpPosition > bottomBorder) {
-			shieldyPosition = bottomBorder + PongGame.shieldSize;
-		} else {
-			shieldyPosition = tmpPosition;
-		}
+		shieldyPosition = correctToShieldBounds(shieldyPosition + dst);
 	}
 
 	public double getShieldxPosition() {
 		return shieldxPosition;
+	}
+
+	/**
+	 * Returns y if it's a correct value for the shield's position, the nearest
+	 * correct value otherwise
+	 * 
+	 * @param y
+	 * @return
+	 */
+	protected double correctToShieldBounds(double y) {
+		if (y < topBorder) {
+			return topBorder;
+		} else if (y > bottomBorder + PongGame.shieldSize) {
+			return bottomBorder + PongGame.shieldSize;
+		} else {
+			return y;
+		}
 	}
 
 	// refresh shield position and stuff

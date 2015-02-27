@@ -33,19 +33,23 @@ public class PongGame {
 	// refresh positions and stuff using passed time
 	public void process(long deltaTime) {
 
+		long tmpDelta = deltaTime;
+
 		for (int i = 0; i < numberOfPlayers; i++) {
 			player[i].process(deltaTime, ball);
 		}
 
-		testAndReflect();
-
 		while (willCollide(deltaTime)) {
-			process(minTimeTillCollision(deltaTime));
+			setBallPosition(deltaTime);
+			testAndReflect();
 		}
 	}
 
 	private void setBallPosition(long deltaTime) {
-		// TODO
+		double deltaX = ball.getxVelocity();
+		double deltaY = ball.getyVelocity();
+
+		ball.move(deltaX, deltaY);
 	}
 
 	private long getDeltaTimeAndUpdate() {
@@ -212,6 +216,23 @@ public class PongGame {
 
 	public void setPlayer(int index, Player newPlayer) {
 		player[index] = newPlayer;
+	}
+
+	/**
+	 * Will return value if it's a correct coordinate, will return the nearest
+	 * border's value if outside of field
+	 * 
+	 * @param value
+	 * @return
+	 */
+	static double correctToFieldBounds(double value) {
+		if (value < 0) {
+			return 0;
+		} else if (value > fieldSize) {
+			return fieldSize;
+		} else {
+			return value;
+		}
 	}
 
 	public byte[] getOutputArray() {

@@ -16,9 +16,7 @@ public class Ball {
 		// double yDir = Math.random();
 		double xDir = 1;
 		double yDir = 0;
-		xDirection = normalizeX(xDir, yDir);
-		yDirection = normalizeY(xDir, yDir);
-
+		normalize();
 	}
 
 	public Ball(double xPosition, double yPosition, double xDirection,
@@ -29,21 +27,26 @@ public class Ball {
 		this.xDirection = xDirection;
 		this.yDirection = yDirection;
 		this.velocity = velocity;
+		normalize();
 	}
 
+	/**
+	 * Move within legal borders
+	 * 
+	 * @param x
+	 * @param y
+	 */
 	public void move(double x, double y) {
-		// TODO
+		xPosition = PongGame.correctToFieldBounds(xPosition + x);
+		yPosition = PongGame.correctToFieldBounds(yPosition + y);
 	}
 
 	// normalize the direction vectors
-	private double normalizeX(double x, double y) {
-		// TODO
-		return x;
-	}
-
-	private double normalizeY(double x, double y) {
-		// TODO
-		return y;
+	private void normalize() {
+		final double length = Math.sqrt(xDirection * xDirection + yDirection
+				* yDirection);
+		xDirection /= length;
+		yDirection /= length;
 	}
 
 	public double getxVelocity() {
