@@ -10,6 +10,8 @@ public class PongGame {
 
 	public static int fieldSize = 24;
 	public static int shieldSize = 4;
+	// distance from edge
+	public static double shieldDistance = 1;
 	public static int numberOfPlayers = 4;
 
 	Player[] player;
@@ -35,13 +37,15 @@ public class PongGame {
 
 		long tmpDelta = deltaTime;
 
-		for (int i = 0; i < numberOfPlayers; i++) {
-			player[i].process(deltaTime, ball);
-		}
-
-		while (willCollide(deltaTime)) {
-			setBallPosition(deltaTime);
+		while (tmpDelta > 0) {
+			long t = minTimeTillCollision(tmpDelta);
+			for (int i = 0; i < numberOfPlayers; i++) {
+				player[i].process(t, ball);
+			}
+			setBallPosition(t);
 			testAndReflect();
+			testAndEnd();
+			tmpDelta -= t;
 		}
 	}
 
@@ -52,6 +56,7 @@ public class PongGame {
 		ball.move(deltaX, deltaY);
 	}
 
+	// TODO put this outside
 	private long getDeltaTimeAndUpdate() {
 		final long timeNow = SystemClock.uptimeMillis();
 		final long deltaTime = timeNow - timeStamp;
@@ -68,105 +73,51 @@ public class PongGame {
 		return ball.getyPosition() + ball.getyVelocity() * deltaTime;
 	}
 
-	private boolean willCollide(long deltaTime) {
-		return predictCollision(deltaTime) != null
-				|| predictShieldCollision(deltaTime) != -1;
-	}
-
-	// return direction of next collision, null if no collision
-	private Direction predictCollision(long deltaTime) {
-		double x = getNextXPosition(deltaTime);
-		double y = getNextYPosition(deltaTime);
-
-		Direction poss1 = null;
-		Direction poss2 = null;
-
-		if (x <= 0) {
-			poss1 = LEFT;
-		} else if (x >= fieldSize) {
-			poss1 = RIGHT;
-		}
-		if (y <= 0) {
-			poss2 = TOP;
-		} else if (y >= fieldSize) {
-			poss2 = BOTTOM;
-		}
-
-		if (poss1 != null && poss2 != null) {
-			if (timeTillCollision(poss1) <= timeTillCollision(poss2)) {
-				return poss1;
+	// next x value that can cause a collision
+	// (either shield position or edge)
+	private double getNextXCollision() {
+		double x;
+		if (ball.getxDirection() > 0) {
+			if (ball.getxPosition() < fieldSize - shieldDistance) {
+				x = fieldSize - shieldDistance;
 			} else {
-				return poss2;
+				x = fieldSize;
 			}
-		} else if (poss1 != null) {
-			return poss1;
-		} else if (poss2 != null) {
-			return poss2;
 		} else {
-			return null;
-		}
-	}
-
-	// return index of player who reflects, -1 if no collision
-	// there may be a former collision with walls
-	private int predictShieldCollision(long deltaTime) {
-		double x = getNextXPosition(deltaTime);
-		double y = getNextYPosition(deltaTime);
-
-		for (int i = 0; i < numberOfPlayers; i++) {
-			double dst = x - player[i].getShieldxPosition();
-			if (i % 2 == 0) {
-				// player is left
-
+			if (ball.getxPosition() > shieldDistance) {
+				x = shieldDistance;
+			} else {
+				x = 0;
 			}
 		}
-		// TODO
-		return 0;
+		return x;
 	}
 
-	private long timeTillCollision(int playerIndex) {
-		double x = player[playerIndex].getShieldxPosition();
-		return timeTillCollision(x, -1);
-	}
-
-	private long timeTillCollision(Direction dir) {
-		switch (dir) {
-		case BOTTOM:
-			return timeTillCollision(-1, fieldSize);
-		case LEFT:
-			return timeTillCollision(0, -1);
-		case RIGHT:
-			return timeTillCollision(fieldSize, -1);
-		case TOP:
-			return timeTillCollision(-1, 0);
-		default:
-			throw new IllegalArgumentException();
-		}
-	}
-
-	// One value marks the barrier, the other one must be -1
-	// Only works if there will definitely be a collision!!!!
-	private long timeTillCollision(double x, double y) {
-		if (x != -1 && y != -1) {
-			throw new IllegalArgumentException();
-		}
-
-		double xVector = ball.getxVelocity();
-		double yVector = ball.getyVelocity();
-
-		if (x != -1) {
-			double dst = Math.abs(x - ball.getxPosition());
-			return Math.round(dst / xVector);
-		} else {
-			double dst = Math.abs(y - ball.getyPosition());
-			return Math.round(dst / yVector);
-		}
-	}
-
+	// time till next collision, deltaTime if no collision within deltaTime
 	private long minTimeTillCollision(long deltaTime) {
-		Direction dir = predictCollision(deltaTime);
-		int playerIndex = predictShieldCollision(deltaTime);
-		return Math.min(timeTillCollision(dir), timeTillCollision(playerIndex));
+		final double nextXCollision = getNextXCollision();
+
+		long xTime = deltaTime;
+		if (ball.getxDirection() > 0) {
+			xTime = (long) ((nextXCollision - ball.getxPosition()) / ball
+					.getxVelocity());
+		} else if (ball.getxDirection() < 0) {
+			xTime = (long) ((ball.getxPosition() - nextXCollision) / -ball
+					.getxVelocity());
+		}
+		long yTime = Integer.MAX_VALUE;
+		if (ball.getyDirection() > 0) {
+			yTime = (long) ((fieldSize - ball.getyPosition()) / ball
+					.getyVelocity());
+		} else if (ball.getyDirection() < 0) {
+			yTime = (long) (ball.getyPosition() / -ball.getyVelocity());
+		}
+
+		if (xTime < deltaTime || yTime < deltaTime) {
+			return Math.min(xTime, yTime);
+		} else {
+			return deltaTime;
+		}
 	}
 
 	void reflect(Direction dir) {
@@ -188,12 +139,28 @@ public class PongGame {
 		}
 	}
 
+	// return true if ball is at height(!) of any shield right now
+	private boolean isShieldCollision() {
+		for (int i = 0; i < numberOfPlayers; i++) {
+			double yShield = player[i].getShieldyPosition();
+			if (ball.getyPosition() > yShield
+					&& ball.getyPosition() < yShield + shieldSize) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private void testAndReflect() {
 		final double gap = 0.1;
-		if (ball.getxPosition() < gap) {
-			reflect(LEFT);
-		} else if (fieldSize - ball.getxPosition() < gap) {
-			reflect(RIGHT);
+		if (ball.getxPosition() < shieldDistance + gap) {
+			if (isShieldCollision()) {
+				reflect(LEFT);
+			}
+		} else if (fieldSize - ball.getxPosition() < shieldDistance + gap) {
+			if (isShieldCollision()) {
+				reflect(RIGHT);
+			}
 		} else if (ball.getyPosition() < gap) {
 			reflect(TOP);
 		} else if (fieldSize - ball.getyPosition() < gap) {
@@ -201,16 +168,24 @@ public class PongGame {
 		}
 	}
 
-	void reflectOnShield(int playerIndex) {
-		if (playerIndex % 2 == 0) {
-			// player is left
-			reflect(LEFT);
-		} else {
-			reflect(RIGHT);
+	private void testAndEnd() {
+		if (ball.getxPosition() <= 0) {
+			if (ball.getyPosition() <= fieldSize / 2) {
+				endTurn(0);
+			} else {
+				endTurn(2);
+			}
+		} else if (ball.getxPosition() >= fieldSize) {
+			if (ball.getyPosition() <= fieldSize / 2) {
+				endTurn(1);
+			} else {
+				endTurn(3);
+			}
 		}
 	}
 
-	void endTurn() {
+	// end turn, with index of the player who lost a point
+	void endTurn(int playerIndex) {
 		// TODO
 	}
 
@@ -220,7 +195,7 @@ public class PongGame {
 
 	/**
 	 * Will return value if it's a correct coordinate, will return the nearest
-	 * border's value if outside of field
+	 * border's value (correct value) if outside of field
 	 * 
 	 * @param value
 	 * @return

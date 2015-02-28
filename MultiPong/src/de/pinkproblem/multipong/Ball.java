@@ -14,8 +14,8 @@ public class Ball {
 		this(PongGame.fieldSize / 2, PongGame.fieldSize / 2, 0, 0, 1);
 		// double xDir = Math.random();
 		// double yDir = Math.random();
-		double xDir = 1;
-		double yDir = 0;
+		xDirection = 1;
+		yDirection = 0;
 		normalize();
 	}
 
