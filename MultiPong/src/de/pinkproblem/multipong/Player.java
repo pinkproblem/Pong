@@ -14,6 +14,8 @@ public abstract class Player {
 	private double topBorder;
 	private double bottomBorder;
 
+	private int score;
+
 	public Player(Direction horizontal, Direction vertical) {
 
 		if (horizontal == TOP || horizontal == BOTTOM || vertical == LEFT
@@ -51,6 +53,14 @@ public abstract class Player {
 		} else {
 			throw new IllegalArgumentException();
 		}
+	}
+
+	public int getScore() {
+		return score;
+	}
+
+	public void setScore(int score) {
+		this.score = score;
 	}
 
 	public double getShieldyPosition() {

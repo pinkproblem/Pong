@@ -5,9 +5,13 @@ import static de.pinkproblem.multipong.Direction.TOP;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnTouchListener;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 public class HostIngameActivity extends IngameActivity {
 
@@ -17,13 +21,47 @@ public class HostIngameActivity extends IngameActivity {
 	private PongGame game;
 	private Player me;
 
+	// ui stuff
+	private ImageView topLeft;
+	private TextView score0;
+	private TextView score1;
+	private TextView score2;
+	private TextView score3;
+	private View inputView;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_host_ingame);
+		setContentView(R.layout.activity_ingame);
 
 		connectionManager = new ConnectionManager();
 		sendingThread = new SendThread();
+
+		// ui stuff
+		topLeft = (ImageView) findViewById(R.id.topLeft);
+		topLeft.setImageResource(R.drawable.player2);
+		inputView = findViewById(R.id.inputView);
+
+		score0 = (TextView) findViewById(R.id.score0);
+		score1 = (TextView) findViewById(R.id.score1);
+		score2 = (TextView) findViewById(R.id.score2);
+		score3 = (TextView) findViewById(R.id.score3);
+
+		inputView.setOnTouchListener(new OnTouchListener() {
+
+			float last;
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				float y = event.getRawY();
+				float dst = last - y;
+				// move own player shield by calculated distance
+				// TODO some scaling
+				me.move(dst);
+				last = y;
+				return true;
+			}
+		});
 
 		game = new PongGame();
 		me = new RealPlayer(LEFT, TOP);
@@ -73,6 +111,7 @@ public class HostIngameActivity extends IngameActivity {
 
 		boolean loop = true;
 		int sendDelay;
+		long timeStamp = SystemClock.uptimeMillis();
 
 		public void run() {
 
@@ -95,8 +134,20 @@ public class HostIngameActivity extends IngameActivity {
 			// Main sending loop.
 			while (loop) {
 
+				// process game logic
+				final long timeNow = SystemClock.uptimeMillis();
+				final long deltaTime = timeNow - timeStamp;
+				timeStamp = timeNow;
+				game.process(deltaTime);
 				byte[] gameInfo = game.getOutputArray();
 
+				// update ui
+				score0.setText(game.getPlayer(0).getScore());
+				score1.setText(game.getPlayer(1).getScore());
+				score2.setText(game.getPlayer(2).getScore());
+				score3.setText(game.getPlayer(3).getScore());
+
+				// send to cm
 				// If write fails, the connection was probably closed by the
 				// server.
 				if (!connectionManager.sendToCm(gameInfo)) {
@@ -115,16 +166,6 @@ public class HostIngameActivity extends IngameActivity {
 
 			// Connection terminated or lost.
 			connectionManager.getCmConnection().closeConnection();
-		}
-	}
-
-	// gesture detection for shield movement
-	class MovementDetector extends GestureDetector.SimpleOnGestureListener {
-		@Override
-		public boolean onScroll(MotionEvent e1, MotionEvent e2,
-				float distanceX, float distanceY) {
-
-			return true;
 		}
 	}
 }

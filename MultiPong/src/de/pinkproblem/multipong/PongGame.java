@@ -4,7 +4,6 @@ import static de.pinkproblem.multipong.Direction.BOTTOM;
 import static de.pinkproblem.multipong.Direction.LEFT;
 import static de.pinkproblem.multipong.Direction.RIGHT;
 import static de.pinkproblem.multipong.Direction.TOP;
-import android.os.SystemClock;
 
 public class PongGame {
 
@@ -14,12 +13,12 @@ public class PongGame {
 	public static double shieldDistance = 1;
 	public static int numberOfPlayers = 4;
 
-	Player[] player;
+	public static final int RUNNING = 0;
+	public static final int PAUSED = 1;
 
+	private int state;
+	private Player[] player;
 	private Ball ball;
-
-	// time of last processing step
-	private long timeStamp;
 
 	public PongGame() {
 		player = new Player[numberOfPlayers];
@@ -30,6 +29,8 @@ public class PongGame {
 		player[1] = new AIPlayer(RIGHT, TOP);
 		player[2] = new AIPlayer(LEFT, BOTTOM);
 		player[3] = new AIPlayer(RIGHT, BOTTOM);
+
+		state = PAUSED;
 	}
 
 	// refresh positions and stuff using passed time
@@ -54,14 +55,6 @@ public class PongGame {
 		double deltaY = ball.getyVelocity();
 
 		ball.move(deltaX, deltaY);
-	}
-
-	// TODO put this outside
-	private long getDeltaTimeAndUpdate() {
-		final long timeNow = SystemClock.uptimeMillis();
-		final long deltaTime = timeNow - timeStamp;
-		timeStamp = timeNow;
-		return deltaTime;
 	}
 
 	// prognose of x position
@@ -191,6 +184,10 @@ public class PongGame {
 
 	public void setPlayer(int index, Player newPlayer) {
 		player[index] = newPlayer;
+	}
+
+	public Player getPlayer(int index) {
+		return player[index];
 	}
 
 	/**
