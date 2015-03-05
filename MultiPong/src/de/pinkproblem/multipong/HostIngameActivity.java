@@ -84,6 +84,15 @@ public class HostIngameActivity extends IngameActivity {
 	}
 
 	@Override
+	protected void onStop() {
+		super.onStop();
+		if (connectionManager != null
+				&& connectionManager.getCmConnection() != null) {
+			connectionManager.closeCMConnection();
+		}
+	}
+
+	@Override
 	protected void onPause() {
 		super.onPause();
 		if (connectionManager != null
@@ -115,7 +124,7 @@ public class HostIngameActivity extends IngameActivity {
 
 		public void run() {
 
-			// Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+			Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
 			// Try to connect.
 			if (!connectionManager.connectToCM()) {
@@ -141,11 +150,13 @@ public class HostIngameActivity extends IngameActivity {
 				game.process(deltaTime);
 				byte[] gameInfo = game.getOutputArray();
 
+				Log.d("", String.valueOf(deltaTime));
+
 				// update ui
-				score0.setText(game.getPlayer(0).getScore());
-				score1.setText(game.getPlayer(1).getScore());
-				score2.setText(game.getPlayer(2).getScore());
-				score3.setText(game.getPlayer(3).getScore());
+				// score0.setText(String.valueOf(game.getPlayer(0).getScore()));
+				// score1.setText(String.valueOf(game.getPlayer(1).getScore()));
+				// score2.setText(String.valueOf(game.getPlayer(2).getScore()));
+				// score3.setText(String.valueOf(game.getPlayer(3).getScore()));
 
 				// send to cm
 				// If write fails, the connection was probably closed by the

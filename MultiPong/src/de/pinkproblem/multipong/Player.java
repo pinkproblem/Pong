@@ -24,9 +24,9 @@ public abstract class Player {
 		}
 
 		if (horizontal == LEFT) {
-			shieldxPosition = 1;
+			shieldxPosition = PongGame.shieldDistance;
 		} else {
-			shieldxPosition = PongGame.fieldSize - 2;
+			shieldxPosition = PongGame.fieldSize - PongGame.shieldDistance;
 		}
 		if (vertical == TOP) {
 			setByCenter(PongGame.fieldSize / 4);

@@ -11,11 +11,11 @@ public class Ball {
 	private double velocity;
 
 	public Ball() {
-		this(PongGame.fieldSize / 2, PongGame.fieldSize / 2, 0, 0, 1);
+		this(PongGame.fieldSize / 2, PongGame.fieldSize / 2, 0, 0, 0.01);
 		// double xDir = Math.random();
 		// double yDir = Math.random();
-		xDirection = 1;
-		yDirection = 0;
+		xDirection = Math.random();
+		yDirection = Math.random();
 		normalize();
 	}
 

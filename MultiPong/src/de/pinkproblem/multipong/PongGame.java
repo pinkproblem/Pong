@@ -4,6 +4,7 @@ import static de.pinkproblem.multipong.Direction.BOTTOM;
 import static de.pinkproblem.multipong.Direction.LEFT;
 import static de.pinkproblem.multipong.Direction.RIGHT;
 import static de.pinkproblem.multipong.Direction.TOP;
+import android.util.Log;
 
 public class PongGame {
 
@@ -51,8 +52,8 @@ public class PongGame {
 	}
 
 	private void setBallPosition(long deltaTime) {
-		double deltaX = ball.getxVelocity();
-		double deltaY = ball.getyVelocity();
+		double deltaX = ball.getxVelocity() * deltaTime;
+		double deltaY = ball.getyVelocity() * deltaTime;
 
 		ball.move(deltaX, deltaY);
 	}
@@ -180,6 +181,10 @@ public class PongGame {
 	// end turn, with index of the player who lost a point
 	void endTurn(int playerIndex) {
 		// TODO
+		Log.d("", "player" + playerIndex + "lost");
+		// reset to start
+		ball.setxPosition(fieldSize / 2);
+		ball.setyPosition(fieldSize / 2);
 	}
 
 	public void setPlayer(int index, Player newPlayer) {
@@ -222,15 +227,15 @@ public class PongGame {
 	byte[][] getFieldArray() {
 		byte[][] array = new byte[fieldSize][fieldSize];
 		// set ball
-		int x = (int) Math.round(ball.getxPosition());
-		int y = (int) Math.round(ball.getyPosition());
+		int x = (int) Math.floor(ball.getxPosition());
+		int y = (int) Math.floor(ball.getyPosition());
 		array[x][y] = (byte) 255;
 
 		// set shields
 		for (int i = 0; i < numberOfPlayers; i++) {
 			int yShield = (int) Math.round(player[i].getShieldyPosition());
 			int xShield = (int) Math.round(player[i].getShieldxPosition());
-			for (int j = yShield; j < yShield + shieldSize; j++) {
+			for (int j = yShield; j < yShield + shieldSize && j < 24; j++) {
 				array[xShield][j] = (byte) 255;
 			}
 		}
