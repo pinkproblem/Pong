@@ -1,5 +1,6 @@
 package de.pinkproblem.multipong;
 
+
 public class RealPlayer extends Player {
 
 	public RealPlayer(double shieldxPosition, double shieldyPosition) {

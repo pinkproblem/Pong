@@ -4,7 +4,6 @@ import static de.pinkproblem.multipong.Direction.BOTTOM;
 import static de.pinkproblem.multipong.Direction.LEFT;
 import static de.pinkproblem.multipong.Direction.RIGHT;
 import static de.pinkproblem.multipong.Direction.TOP;
-import android.util.Log;
 
 public class PongGame {
 
@@ -72,13 +71,13 @@ public class PongGame {
 	private double getNextXCollision() {
 		double x;
 		if (ball.getxDirection() > 0) {
-			if (ball.getxPosition() < fieldSize - shieldDistance) {
+			if (ball.getxPosition() <= fieldSize - shieldDistance) {
 				x = fieldSize - shieldDistance;
 			} else {
 				x = fieldSize;
 			}
 		} else {
-			if (ball.getxPosition() > shieldDistance) {
+			if (ball.getxPosition() >= shieldDistance) {
 				x = shieldDistance;
 			} else {
 				x = 0;
@@ -99,7 +98,7 @@ public class PongGame {
 			xTime = (long) ((ball.getxPosition() - nextXCollision) / -ball
 					.getxVelocity());
 		}
-		long yTime = Integer.MAX_VALUE;
+		long yTime = deltaTime;
 		if (ball.getyDirection() > 0) {
 			yTime = (long) ((fieldSize - ball.getyPosition()) / ball
 					.getyVelocity());
@@ -135,17 +134,60 @@ public class PongGame {
 
 	// return true if ball is at height(!) of any shield right now
 	private boolean isShieldCollision() {
-		for (int i = 0; i < numberOfPlayers; i++) {
-			double yShield = player[i].getShieldyPosition();
-			if (ball.getyPosition() > yShield
-					&& ball.getyPosition() < yShield + shieldSize) {
-				return true;
-			}
+		// get player for possible collision
+		Player p = player[getAreaIndex()];
+		double dstToShield = Math.abs(ball.getxPosition()
+				- p.getShieldxPosition());
+		if (dstToShield < 0.5 && ball.getyPosition() >= p.getShieldyPosition()
+				&& ball.getyPosition() <= p.getShieldyPosition() + shieldSize) {
+			return true;
 		}
 		return false;
 	}
 
+	// returns the index of the player in whose area the ball is
+	private int getAreaIndex() {
+		if (ball.getxPosition() < fieldSize / 2) {
+			if (ball.getyPosition() < fieldSize / 2) {
+				return 0;
+			} else {
+				return 2;
+			}
+		} else {
+			if (ball.getyPosition() < fieldSize / 2) {
+				return 1;
+			} else {
+				return 3;
+			}
+		}
+	}
+
 	private void testAndReflect() {
+
+		if (isShieldCollision()) {
+			switch (getAreaIndex()) {
+			case 0:
+				reflect(LEFT);
+				break;
+			case 1:
+				reflect(RIGHT);
+				break;
+			case 2:
+				reflect(LEFT);
+				break;
+			case 3:
+				reflect(RIGHT);
+				break;
+			}
+		}
+		
+		if (ball.getyPosition() < 0.1) {
+			reflect(TOP);
+		} else if (fieldSize - ball.getyPosition() < 0.1) {
+			reflect(BOTTOM);
+		}
+
+		/*
 		final double gap = 0.1;
 		if (ball.getxPosition() < shieldDistance + gap) {
 			if (isShieldCollision()) {
@@ -159,7 +201,7 @@ public class PongGame {
 			reflect(TOP);
 		} else if (fieldSize - ball.getyPosition() < gap) {
 			reflect(BOTTOM);
-		}
+		}*/
 	}
 
 	private void testAndEnd() {
@@ -181,7 +223,6 @@ public class PongGame {
 	// end turn, with index of the player who lost a point
 	void endTurn(int playerIndex) {
 		// TODO
-		Log.d("", "player" + playerIndex + "lost");
 		// reset to start
 		ball.setxPosition(fieldSize / 2);
 		ball.setyPosition(fieldSize / 2);
@@ -233,10 +274,11 @@ public class PongGame {
 
 		// set shields
 		for (int i = 0; i < numberOfPlayers; i++) {
-			int yShield = (int) Math.round(player[i].getShieldyPosition());
-			int xShield = (int) Math.round(player[i].getShieldxPosition());
+			int yShield = (int) Math.floor(player[i].getShieldyPosition());
+			int xShield = (int) Math.floor(player[i].getShieldxPosition());
 			for (int j = yShield; j < yShield + shieldSize && j < 24; j++) {
-				array[xShield][j] = (byte) 255;
+				byte[] b = array[xShield];
+				b[j] = (byte) 255;
 			}
 		}
 

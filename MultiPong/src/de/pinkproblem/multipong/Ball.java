@@ -1,5 +1,6 @@
 package de.pinkproblem.multipong;
 
+
 public class Ball {
 
 	private double xPosition;
