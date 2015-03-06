@@ -98,7 +98,7 @@
         android:layout_alignTop="@+id/inputView"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="145dp"
-        android:text="Small Text"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:text="@string/move_to_start"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 </RelativeLayout>

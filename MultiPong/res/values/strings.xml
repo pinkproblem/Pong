@@ -10,5 +10,6 @@
     <string name="enableBt">Please enable bluetooth</string>
     <string name="ok">Ok</string>
     <string name="connection_error">A connection error occured. Please check your bluetooth connection.</string>
+    <string name="move_to_start">Move to start</string>
 
 </resources>
