@@ -11,6 +11,7 @@ public class IngameActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_ingame);
+		getActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 
 	// gesture detection for shield movement

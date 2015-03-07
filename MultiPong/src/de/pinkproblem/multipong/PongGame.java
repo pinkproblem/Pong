@@ -38,7 +38,7 @@ public class PongGame {
 
 		long tmpDelta = deltaTime;
 
-		while (tmpDelta > 0) {
+		while (tmpDelta > 0 && state == RUNNING) {
 			long t = minTimeTillCollision(tmpDelta);
 			for (int i = 0; i < numberOfPlayers; i++) {
 				player[i].process(t, ball);
@@ -57,31 +57,13 @@ public class PongGame {
 		ball.move(deltaX, deltaY);
 	}
 
-	// prognose of x position
-	private double getNextXPosition(long deltaTime) {
-		return ball.getxPosition() + ball.getxVelocity() * deltaTime;
-	}
-
-	private double getNextYPosition(long deltaTime) {
-		return ball.getyPosition() + ball.getyVelocity() * deltaTime;
-	}
-
 	// next x value that can cause a collision
-	// (either shield position or edge)
 	private double getNextXCollision() {
 		double x;
 		if (ball.getxDirection() > 0) {
-			if (ball.getxPosition() <= fieldSize - shieldDistance) {
-				x = fieldSize - shieldDistance;
-			} else {
-				x = fieldSize;
-			}
+			x = fieldSize - shieldDistance;
 		} else {
-			if (ball.getxPosition() >= shieldDistance) {
-				x = shieldDistance;
-			} else {
-				x = 0;
-			}
+			x = shieldDistance;
 		}
 		return x;
 	}
@@ -113,25 +95,6 @@ public class PongGame {
 		}
 	}
 
-	void reflect(Direction dir) {
-		switch (dir) {
-		case BOTTOM:
-			ball.setyDirection(-ball.getyDirection());
-			break;
-		case LEFT:
-			ball.setxDirection(-ball.getxDirection());
-			break;
-		case RIGHT:
-			ball.setxDirection(-ball.getxDirection());
-			break;
-		case TOP:
-			ball.setyDirection(-ball.getyDirection());
-			break;
-		default:
-			throw new IllegalArgumentException();
-		}
-	}
-
 	// return true if ball is at height(!) of any shield right now
 	private boolean isShieldCollision() {
 		// get player for possible collision
@@ -143,6 +106,13 @@ public class PongGame {
 			return true;
 		}
 		return false;
+	}
+
+	private boolean isInShieldXRange() {
+		double dst1 = Math.abs(ball.getxPosition() - shieldDistance);
+		double dst2 = Math.abs(ball.getxPosition()
+				- (fieldSize - shieldDistance));
+		return dst1 < 0.2 || dst2 < 0.2;
 	}
 
 	// returns the index of the player in whose area the ball is
@@ -179,29 +149,25 @@ public class PongGame {
 				reflect(RIGHT);
 				break;
 			}
+		} else if (isInShieldXRange()) {
+			// somebody failed here (in shield range but no collision)
+			int playerIndex = getAreaIndex();
+			// set to edge
+			if (playerIndex == 0 || playerIndex == 2) {
+				ball.setxPosition(0);
+			} else if (playerIndex == 1 || playerIndex == 3) {
+				ball.setxPosition(fieldSize);
+			}
+			testAndEnd();
 		}
-		
+
+		// reflect at top and bottom edge
 		if (ball.getyPosition() < 0.1) {
 			reflect(TOP);
 		} else if (fieldSize - ball.getyPosition() < 0.1) {
 			reflect(BOTTOM);
 		}
 
-		/*
-		final double gap = 0.1;
-		if (ball.getxPosition() < shieldDistance + gap) {
-			if (isShieldCollision()) {
-				reflect(LEFT);
-			}
-		} else if (fieldSize - ball.getxPosition() < shieldDistance + gap) {
-			if (isShieldCollision()) {
-				reflect(RIGHT);
-			}
-		} else if (ball.getyPosition() < gap) {
-			reflect(TOP);
-		} else if (fieldSize - ball.getyPosition() < gap) {
-			reflect(BOTTOM);
-		}*/
 	}
 
 	private void testAndEnd() {
@@ -223,9 +189,34 @@ public class PongGame {
 	// end turn, with index of the player who lost a point
 	void endTurn(int playerIndex) {
 		// TODO
+		for (int i = 0; i < numberOfPlayers; i++) {
+			Player p = player[i];
+			if (i != playerIndex) {
+				p.increaseScore();
+			}
+		}
 		// reset to start
-		ball.setxPosition(fieldSize / 2);
-		ball.setyPosition(fieldSize / 2);
+		// ball.setxPosition(fieldSize / 2);
+		// ball.setyPosition(fieldSize / 2);
+	}
+
+	void reflect(Direction dir) {
+		switch (dir) {
+		case BOTTOM:
+			ball.setyDirection(-ball.getyDirection());
+			break;
+		case LEFT:
+			ball.setxDirection(-ball.getxDirection());
+			break;
+		case RIGHT:
+			ball.setxDirection(-ball.getxDirection());
+			break;
+		case TOP:
+			ball.setyDirection(-ball.getyDirection());
+			break;
+		default:
+			throw new IllegalArgumentException();
+		}
 	}
 
 	public void setPlayer(int index, Player newPlayer) {
@@ -234,6 +225,22 @@ public class PongGame {
 
 	public Player getPlayer(int index) {
 		return player[index];
+	}
+
+	public int getState() {
+		return state;
+	}
+
+	public void setState(int state) {
+		this.state = state;
+	}
+
+	public void reset() {
+		for (int i = 0; i < numberOfPlayers; i++) {
+			player[i].setScore(0);
+		}
+		ball.setxPosition(fieldSize / 2);
+		ball.setyPosition(fieldSize / 2);
 	}
 
 	/**

@@ -28,12 +28,14 @@
         <activity
             android:name=".IngameActivity"
             android:label="@string/title_activity_ingame"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainMenu" >
         </activity>
         <activity
             android:name=".HostIngameActivity"
             android:label="@string/title_activity_host_ingame"
-             android:screenOrientation="portrait" >
+             android:screenOrientation="portrait"
+             android:parentActivityName=".MainMenu" >
         </activity>
     </application>
 
