@@ -32,5 +32,21 @@
     <item name="android:shadowDy">1</item>
     <item name="android:shadowRadius">2</item>
 	</style>
+	
+    <style name="ScoreLeft" parent="@android:style/Widget.TextView">
+        <item name="android:background">@drawable/score_bg</item> 
+        <item name="android:gravity">right|center_vertical</item>
+		<item name="android:paddingRight">15dp</item>
+		<item name="android:textSize">50dp</item>
+		<item name="android:textColor">#FFFFFF</item>
+    </style>
+    
+    <style name="ScoreRight" parent="@android:style/Widget.TextView">
+        <item name="android:background">@drawable/score_bg_inv</item> 
+        <item name="android:gravity">left|center_vertical</item>
+		<item name="android:paddingLeft">15dp</item>
+		<item name="android:textSize">50dp</item>
+		<item name="android:textColor">#FFFFFF</item>
+    </style>
 
 </resources>
