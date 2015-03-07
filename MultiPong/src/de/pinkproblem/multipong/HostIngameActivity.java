@@ -153,10 +153,22 @@ public class HostIngameActivity extends IngameActivity {
 				Log.d("", String.valueOf(deltaTime));
 
 				// update ui
-				// score0.setText(String.valueOf(game.getPlayer(0).getScore()));
-				// score1.setText(String.valueOf(game.getPlayer(1).getScore()));
-				// score2.setText(String.valueOf(game.getPlayer(2).getScore()));
-				// score3.setText(String.valueOf(game.getPlayer(3).getScore()));
+				runOnUiThread(new Runnable() {
+
+					@Override
+					public void run() {
+						// TODO Auto-generated method stub
+
+						score0.setText(String.valueOf(game.getPlayer(0)
+								.getScore()));
+						score1.setText(String.valueOf(game.getPlayer(1)
+								.getScore()));
+						score2.setText(String.valueOf(game.getPlayer(2)
+								.getScore()));
+						score3.setText(String.valueOf(game.getPlayer(3)
+								.getScore()));
+					}
+				});
 
 				// send to cm
 				// If write fails, the connection was probably closed by the
