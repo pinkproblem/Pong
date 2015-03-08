@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -29,6 +32,26 @@ public class MainMenu extends Activity {
 
 		btConnection = new LEDMatrixBTConn(this, REMOTE_BT_DEVICE_NAME, X_SIZE,
 				Y_SIZE, COLOR_MODE, "MultiPong");
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu items for use in the action bar
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.main_menu_action_bar, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle presses on the action bar items
+		switch (item.getItemId()) {
+		case R.id.menu_settings:
+			openSettings();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
 
 	public void hostGame(View view) {
@@ -71,5 +94,10 @@ public class MainMenu extends Activity {
 		Toast toast = Toast.makeText(this, R.string.enableBt,
 				Toast.LENGTH_SHORT);
 		toast.show();
+	}
+
+	private void openSettings() {
+		Intent intent = new Intent(this, SettingsActivity.class);
+		startActivity(intent);
 	}
 }

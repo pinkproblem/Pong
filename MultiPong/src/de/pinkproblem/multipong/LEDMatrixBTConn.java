@@ -86,6 +86,10 @@ public class LEDMatrixBTConn {
 		mColorMode = colorMode;
 	}
 
+	public void setCmDeviceName(String name) {
+		mRemoteBTDeviceName = name;
+	}
+
 	/**
 	 * Returns the name of the remote Bluetooth device.
 	 * 

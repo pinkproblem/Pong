@@ -8,13 +8,15 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 public class ConnectionManager {
 
 	private Context context;
 
 	private LEDMatrixBTConn cmConnection;
-	protected static final String REMOTE_BT_DEVICE_NAME = "ledpi-teco";
+	// protected String cmDeviceName;
 	// Remote display x and y size.
 	protected static final int X_SIZE = 24;
 	protected static final int Y_SIZE = 24;
@@ -27,9 +29,16 @@ public class ConnectionManager {
 	private final ArrayList<UUID> uuid;
 	private final BluetoothAdapter adapter;
 
-	public ConnectionManager() {
-		cmConnection = new LEDMatrixBTConn(context, REMOTE_BT_DEVICE_NAME,
-				X_SIZE, Y_SIZE, COLOR_MODE, APP_NAME);
+	public ConnectionManager(Context context) {
+		this.context = context;
+		// get connection device from settings
+		SharedPreferences sharedPref = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		String cmDeviceName = sharedPref.getString("Connection Machine Device",
+				"ledpi-teco");
+
+		cmConnection = new LEDMatrixBTConn(context, cmDeviceName, X_SIZE,
+				Y_SIZE, COLOR_MODE, APP_NAME);
 
 		adapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -38,6 +47,10 @@ public class ConnectionManager {
 		uuid.add(UUID.fromString("2eaa658c-bda9-451d-a942-d7d16705b373"));
 		uuid.add(UUID.fromString("6bb266a3-bd93-4783-b298-501cf4dabb8e"));
 		uuid.add(UUID.fromString("b4b8ba7e-36b2-4a7c-ad2b-2349479852d9"));
+	}
+
+	public void setCmDeviceName(String name) {
+		cmConnection.setCmDeviceName(name);
 	}
 
 	public boolean connectToCM() {

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListPreference
+        android:key="pref_device"
+        android:title="@string/pref_device"
+        android:summary="%s"
+        android:dialogTitle="@string/pref_device"
+        android:defaultValue="@string/pref_device_default" />
+    <Preference 
+        android:key="pref_version"
+        android:title="@string/pref_version"
+        android:summary="@string/pref_version_info"/>
+</PreferenceScreen>

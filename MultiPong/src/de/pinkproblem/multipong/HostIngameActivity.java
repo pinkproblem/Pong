@@ -4,8 +4,10 @@ import static de.pinkproblem.multipong.Direction.LEFT;
 import static de.pinkproblem.multipong.Direction.TOP;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -34,7 +36,7 @@ public class HostIngameActivity extends IngameActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_ingame);
 
-		connectionManager = new ConnectionManager();
+		connectionManager = new ConnectionManager(this);
 		sendingThread = new SendThread();
 
 		// ui stuff
@@ -71,6 +73,7 @@ public class HostIngameActivity extends IngameActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
+		connectionManager.setCmDeviceName(getCmDeviceName());
 
 		// return to main menu if connection error
 		if (!connectionManager.getCmConnection().prepare()
@@ -99,6 +102,12 @@ public class HostIngameActivity extends IngameActivity {
 				&& connectionManager.getCmConnection() != null) {
 			connectionManager.closeCMConnection();
 		}
+	}
+
+	private String getCmDeviceName() {
+		SharedPreferences sharedPref = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		return sharedPref.getString("pref_device", "");
 	}
 
 	private void connectionError() {
