@@ -95,15 +95,6 @@ public class HostIngameActivity extends IngameActivity {
 		}
 	}
 
-	@Override
-	protected void onPause() {
-		super.onPause();
-		if (connectionManager != null
-				&& connectionManager.getCmConnection() != null) {
-			connectionManager.closeCMConnection();
-		}
-	}
-
 	private String getCmDeviceName() {
 		SharedPreferences sharedPref = PreferenceManager
 				.getDefaultSharedPreferences(this);
@@ -159,7 +150,7 @@ public class HostIngameActivity extends IngameActivity {
 				game.process(deltaTime);
 				byte[] gameInfo = game.getOutputArray();
 
-				Log.d("", String.valueOf(deltaTime));
+				// Log.d("", String.valueOf(deltaTime));
 
 				// update ui
 				runOnUiThread(new Runnable() {
