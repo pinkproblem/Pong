@@ -1,6 +1,5 @@
 package de.pinkproblem.multipong;
 
-
 public class Ball {
 
 	private double xPosition;
@@ -15,8 +14,8 @@ public class Ball {
 		this(PongGame.fieldSize / 2, PongGame.fieldSize / 2, 0, 0, 0.01);
 		// double xDir = Math.random();
 		// double yDir = Math.random();
-		xDirection = Math.random();
-		yDirection = Math.random();
+		xDirection = Math.random() - 0.5;
+		yDirection = Math.random() - 0.5;
 		normalize();
 	}
 
@@ -43,7 +42,7 @@ public class Ball {
 	}
 
 	// normalize the direction vectors
-	private void normalize() {
+	void normalize() {
 		final double length = Math.sqrt(xDirection * xDirection + yDirection
 				* yDirection);
 		xDirection /= length;

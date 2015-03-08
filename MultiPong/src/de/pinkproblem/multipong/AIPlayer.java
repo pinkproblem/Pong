@@ -1,6 +1,5 @@
 package de.pinkproblem.multipong;
 
-
 public class AIPlayer extends Player {
 
 	// the AI's movement speed
@@ -8,22 +7,25 @@ public class AIPlayer extends Player {
 
 	public AIPlayer(double shieldxPosition, double shieldyPosition) {
 		super(shieldxPosition, shieldyPosition);
-		velocity = 0.01;
+		velocity = 0.004;
 	}
 
 	public AIPlayer(Direction horizontal, Direction vertical) {
 		super(horizontal, vertical);
-		velocity = 0.009;
+		velocity = 0.004;
 	}
 
 	@Override
 	void process(long deltaTime, Ball ball) {
-		double dst = Math.floor(ball.getyPosition()) - Math.floor(getShieldCenter());
-		if(dst>=0){
-			dst=1;
-		}else{
-			dst=-1;
+		double dst = ball.getyPosition() - getShieldCenter();
+		double dir;
+		if (dst >= 0) {
+			dir = 1;
+		} else {
+			dir = -1;
 		}
-		move(dst * deltaTime * velocity);
+		// move as far as possible in direction of ball, but not past it
+		double maxDst = Math.min(dir * deltaTime * velocity, dst);
+		move(maxDst);
 	}
 }

@@ -7,11 +7,13 @@ import static de.pinkproblem.multipong.Direction.TOP;
 
 public class PongGame {
 
-	public static int fieldSize = 24;
-	public static int shieldSize = 4;
+	public static final int fieldSize = 24;
+	public static final int shieldSize = 4;
 	// distance from edge
-	public static double shieldDistance = 1;
-	public static int numberOfPlayers = 4;
+	public static final double shieldDistance = 2;
+	public static final int numberOfPlayers = 4;
+	// tolerance for double calculation
+	private static final double eps = 0.1;
 
 	public static final int RUNNING = 0;
 	public static final int PAUSED = 1;
@@ -30,7 +32,7 @@ public class PongGame {
 		player[2] = new AIPlayer(LEFT, BOTTOM);
 		player[3] = new AIPlayer(RIGHT, BOTTOM);
 
-		state = PAUSED;
+		state = RUNNING;
 	}
 
 	// refresh positions and stuff using passed time
@@ -101,7 +103,7 @@ public class PongGame {
 		Player p = player[getAreaIndex()];
 		double dstToShield = Math.abs(ball.getxPosition()
 				- p.getShieldxPosition());
-		if (dstToShield < 0.5 && ball.getyPosition() >= p.getShieldyPosition()
+		if (dstToShield < eps && ball.getyPosition() >= p.getShieldyPosition()
 				&& ball.getyPosition() <= p.getShieldyPosition() + shieldSize) {
 			return true;
 		}
@@ -112,7 +114,13 @@ public class PongGame {
 		double dst1 = Math.abs(ball.getxPosition() - shieldDistance);
 		double dst2 = Math.abs(ball.getxPosition()
 				- (fieldSize - shieldDistance));
-		return dst1 < 0.2 || dst2 < 0.2;
+		return dst1 < eps || dst2 < eps;
+	}
+
+	private boolean isInShieldYRange() {
+		Player p = player[getAreaIndex()];
+		return ball.getyPosition() >= p.getShieldyPosition()
+				&& ball.getyPosition() <= p.getShieldyPosition() + shieldSize;
 	}
 
 	// returns the index of the player in whose area the ball is
@@ -156,28 +164,28 @@ public class PongGame {
 			if (playerIndex == 0 || playerIndex == 2) {
 				ball.setxPosition(0);
 			} else if (playerIndex == 1 || playerIndex == 3) {
-				ball.setxPosition(fieldSize);
+				ball.setxPosition(fieldSize - eps);
 			}
 			testAndEnd();
 		}
 
 		// reflect at top and bottom edge
-		if (ball.getyPosition() < 0.1) {
+		if (ball.getyPosition() < eps) {
 			reflect(TOP);
-		} else if (fieldSize - ball.getyPosition() < 0.1) {
+		} else if (fieldSize - ball.getyPosition() < eps) {
 			reflect(BOTTOM);
 		}
 
 	}
 
 	private void testAndEnd() {
-		if (ball.getxPosition() <= 0) {
+		if (ball.getxPosition() <= eps) {
 			if (ball.getyPosition() <= fieldSize / 2) {
 				endTurn(0);
 			} else {
 				endTurn(2);
 			}
-		} else if (ball.getxPosition() >= fieldSize) {
+		} else if (ball.getxPosition() >= fieldSize - eps) {
 			if (ball.getyPosition() <= fieldSize / 2) {
 				endTurn(1);
 			} else {
@@ -195,21 +203,26 @@ public class PongGame {
 				p.increaseScore();
 			}
 		}
+		state = PAUSED;
 		// reset to start
 		// ball.setxPosition(fieldSize / 2);
 		// ball.setyPosition(fieldSize / 2);
 	}
 
 	void reflect(Direction dir) {
+		// vary a bit when reflecting on shield, so the path wont repeat
+		double random = Math.random() - 0.5;
 		switch (dir) {
 		case BOTTOM:
 			ball.setyDirection(-ball.getyDirection());
 			break;
 		case LEFT:
-			ball.setxDirection(-ball.getxDirection());
+			ball.setxDirection(-ball.getxDirection() + random);
+			ball.normalize();
 			break;
 		case RIGHT:
-			ball.setxDirection(-ball.getxDirection());
+			ball.setxDirection(-ball.getxDirection() + random);
+			ball.normalize();
 			break;
 		case TOP:
 			ball.setyDirection(-ball.getyDirection());
@@ -241,6 +254,13 @@ public class PongGame {
 		}
 		ball.setxPosition(fieldSize / 2);
 		ball.setyPosition(fieldSize / 2);
+		state = PAUSED;
+	}
+
+	public void restart() {
+		ball.setxPosition(fieldSize / 2);
+		ball.setyPosition(fieldSize / 2);
+		state = PAUSED;
 	}
 
 	/**
@@ -254,7 +274,7 @@ public class PongGame {
 		if (value < 0) {
 			return 0;
 		} else if (value > fieldSize) {
-			return fieldSize;
+			return fieldSize - eps;
 		} else {
 			return value;
 		}
@@ -277,12 +297,27 @@ public class PongGame {
 		// set ball
 		int x = (int) Math.floor(ball.getxPosition());
 		int y = (int) Math.floor(ball.getyPosition());
+
+		// dirty hack so the ball wont glitch into the shield
+		// if (x == Math.floor(shieldDistance) && isInShieldYRange()) {
+		// x++;
+		// } else if (x == Math.floor(fieldSize - shieldDistance)
+		// && isInShieldYRange()) {
+		// x--;
+		// }
+
 		array[x][y] = (byte) 255;
 
 		// set shields
 		for (int i = 0; i < numberOfPlayers; i++) {
 			int yShield = (int) Math.floor(player[i].getShieldyPosition());
 			int xShield = (int) Math.floor(player[i].getShieldxPosition());
+
+			// better dirty hack
+			if (xShield == shieldDistance) {
+				xShield--;
+			}
+
 			for (int j = yShield; j < yShield + shieldSize && j < 24; j++) {
 				byte[] b = array[xShield];
 				b[j] = (byte) 255;

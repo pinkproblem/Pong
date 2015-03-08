@@ -1,6 +1,5 @@
 package de.pinkproblem.multipong;
 
-
 import static de.pinkproblem.multipong.Direction.BOTTOM;
 import static de.pinkproblem.multipong.Direction.LEFT;
 import static de.pinkproblem.multipong.Direction.RIGHT;
@@ -23,13 +22,13 @@ public abstract class Player {
 				|| vertical == RIGHT) {
 			throw new IllegalArgumentException();
 		}
-		
+
 		setBorders(vertical);
 
 		if (horizontal == LEFT) {
 			shieldxPosition = PongGame.shieldDistance;
 		} else {
-			shieldxPosition = PongGame.fieldSize - PongGame.shieldDistance-1;
+			shieldxPosition = PongGame.fieldSize - PongGame.shieldDistance;
 		}
 		if (vertical == TOP) {
 			setByCenter(PongGame.fieldSize / 4);
@@ -62,6 +61,10 @@ public abstract class Player {
 
 	public void setScore(int score) {
 		this.score = score;
+	}
+
+	public void increaseScore() {
+		score++;
 	}
 
 	public double getShieldyPosition() {
