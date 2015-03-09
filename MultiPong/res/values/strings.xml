@@ -16,5 +16,6 @@
     <string name="pref_device_default">ledpi-teco</string>
     <string name="pref_version">Version Info</string>
     <string name="pref_version_info">1.0</string>
+    <string name="title_activity_guest_ingame">MultiPong</string>
 
 </resources>

@@ -42,6 +42,10 @@
             android:label="@string/title_activity_settings"
             android:parentActivityName=".MainMenu" >
         </activity>
+        <activity
+            android:name=".GuestIngameActivity"
+            android:label="@string/title_activity_guest_ingame" >
+        </activity>
     </application>
 
 </manifest>
