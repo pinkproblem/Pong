@@ -32,7 +32,7 @@ public class PongGame {
 		player[2] = new AIPlayer(LEFT, BOTTOM);
 		player[3] = new AIPlayer(RIGHT, BOTTOM);
 
-		state = RUNNING;
+		state = PAUSED;
 	}
 
 	// refresh positions and stuff using passed time
@@ -259,6 +259,9 @@ public class PongGame {
 	public void restart() {
 		ball.setxPosition(fieldSize / 2);
 		ball.setyPosition(fieldSize / 2);
+		ball.setxDirection(Math.random() - 0.5);
+		ball.setyDirection(Math.random() - 0.5);
+		ball.normalize();
 		state = PAUSED;
 	}
 

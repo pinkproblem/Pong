@@ -7,12 +7,12 @@ public class AIPlayer extends Player {
 
 	public AIPlayer(double shieldxPosition, double shieldyPosition) {
 		super(shieldxPosition, shieldyPosition);
-		velocity = 0.004;
+		velocity = 0.01;
 	}
 
 	public AIPlayer(Direction horizontal, Direction vertical) {
 		super(horizontal, vertical);
-		velocity = 0.004;
+		velocity = 0.01;
 	}
 
 	@Override

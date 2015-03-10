@@ -60,6 +60,11 @@ public class HostIngameActivity extends IngameActivity {
 			public boolean onTouch(View v, MotionEvent event) {
 				// TODO
 				hideHint();
+				if (game.getState() == PongGame.PAUSED
+						&& lastAction == MotionEvent.ACTION_UP) {
+					game.restart();
+					game.setState(PongGame.RUNNING);
+				}
 
 				float y = event.getRawY();
 				if (lastAction == MotionEvent.ACTION_UP) {

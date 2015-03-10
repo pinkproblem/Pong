@@ -11,7 +11,7 @@ public class Ball {
 	private double velocity;
 
 	public Ball() {
-		this(PongGame.fieldSize / 2, PongGame.fieldSize / 2, 0, 0, 0.01);
+		this(PongGame.fieldSize / 2, PongGame.fieldSize / 2, 0, 0, 0.015);
 		// double xDir = Math.random();
 		// double yDir = Math.random();
 		xDirection = Math.random() - 0.5;
