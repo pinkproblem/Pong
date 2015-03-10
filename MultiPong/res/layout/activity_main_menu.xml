@@ -12,6 +12,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignRight="@+id/hostButton"
         android:layout_marginBottom="78dp"
+        android:onClick="joinGame"
         android:text="@string/joinGame" />
 
     <Button

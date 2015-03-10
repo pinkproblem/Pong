@@ -6,14 +6,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 public class HostIngameActivity extends IngameActivity {
 
@@ -21,15 +20,6 @@ public class HostIngameActivity extends IngameActivity {
 	private Thread sendingThread;
 
 	private PongGame game;
-	private Player me;
-
-	// ui stuff
-	private ImageView topLeft;
-	private TextView score0;
-	private TextView score1;
-	private TextView score2;
-	private TextView score3;
-	private View inputView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -40,16 +30,6 @@ public class HostIngameActivity extends IngameActivity {
 
 		connectionManager = new ConnectionManager(this);
 		sendingThread = new SendThread();
-
-		// ui stuff
-		topLeft = (ImageView) findViewById(R.id.topLeft);
-		topLeft.setImageResource(R.drawable.player2);
-		inputView = findViewById(R.id.inputView);
-
-		score0 = (TextView) findViewById(R.id.score0);
-		score1 = (TextView) findViewById(R.id.score1);
-		score2 = (TextView) findViewById(R.id.score2);
-		score3 = (TextView) findViewById(R.id.score3);
 
 		inputView.setOnTouchListener(new OnTouchListener() {
 
@@ -98,6 +78,8 @@ public class HostIngameActivity extends IngameActivity {
 			connectionError();
 		}
 
+		connectionManager.startListening();
+
 		sendingThread.start();
 		Log.d("", "Thread started");
 	}
@@ -105,10 +87,7 @@ public class HostIngameActivity extends IngameActivity {
 	@Override
 	protected void onStop() {
 		super.onStop();
-		if (connectionManager != null
-				&& connectionManager.getCmConnection() != null) {
-			connectionManager.closeCMConnection();
-		}
+		connectionManager.stop();
 	}
 
 	private String getCmDeviceName() {
@@ -131,6 +110,12 @@ public class HostIngameActivity extends IngameActivity {
 				});
 		dialog.show(getFragmentManager(), "connection_error");
 	}
+
+	private Handler handler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+
+		};
+	};
 
 	class SendThread extends Thread {
 

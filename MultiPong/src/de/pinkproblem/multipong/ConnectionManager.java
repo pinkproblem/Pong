@@ -10,10 +10,15 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 public class ConnectionManager {
 
 	private Context context;
+
+	private final ArrayList<UUID> uuid;
+	private final BluetoothAdapter adapter;
+	private ListenThread listenThread;
 
 	private LEDMatrixBTConn cmConnection;
 	// protected String cmDeviceName;
@@ -25,9 +30,6 @@ public class ConnectionManager {
 
 	// The name this app uses to identify with the server.
 	protected static final String APP_NAME = "de.pinkproblem.MultiPong";
-
-	private final ArrayList<UUID> uuid;
-	private final BluetoothAdapter adapter;
 
 	public ConnectionManager(Context context) {
 		this.context = context;
@@ -69,6 +71,25 @@ public class ConnectionManager {
 		return cmConnection;
 	}
 
+	public void startListening() {
+		if (listenThread != null) {
+			listenThread.cancel();
+			listenThread = null;
+		}
+		listenThread = new ListenThread();
+		listenThread.start();
+	}
+
+	public void stop() {
+		if (cmConnection != null) {
+			cmConnection.closeConnection();
+		}
+		if (listenThread != null) {
+			listenThread.cancel();
+			listenThread = null;
+		}
+	}
+
 	private class ListenThread extends Thread {
 		private BluetoothServerSocket serverSocket;
 
@@ -98,7 +119,7 @@ public class ConnectionManager {
 				// If a connection was accepted
 				if (socket != null) {
 					// Do work to manage the connection (in a separate thread)
-					// manageConnectedSocket(socket);
+					Log.d("", "Connected successfully with third party");
 					// TODO
 					try {
 						serverSocket.close();

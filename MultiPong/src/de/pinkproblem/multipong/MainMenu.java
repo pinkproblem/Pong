@@ -1,9 +1,14 @@
 package de.pinkproblem.multipong;
 
+import java.util.Set;
+
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -12,7 +17,7 @@ import android.widget.Toast;
 
 public class MainMenu extends Activity {
 
-	private LEDMatrixBTConn btConnection;
+	private BluetoothAdapter adapter;
 	protected static final String REMOTE_BT_DEVICE_NAME = "ledpi-teco";
 
 	// Remote display x and y size.
@@ -30,8 +35,7 @@ public class MainMenu extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main_menu);
 
-		btConnection = new LEDMatrixBTConn(this, REMOTE_BT_DEVICE_NAME, X_SIZE,
-				Y_SIZE, COLOR_MODE, "MultiPong");
+		adapter = BluetoothAdapter.getDefaultAdapter();
 	}
 
 	@Override
@@ -55,23 +59,50 @@ public class MainMenu extends Activity {
 	}
 
 	public void hostGame(View view) {
-		if (!btConnection.prepare()) {
+		if (adapter == null) {
 			Toast.makeText(this, "Bluetooth is not available on this device.",
 					Toast.LENGTH_LONG).show();
 			return;
 		}
-		if (!btConnection.isEnabled()) {
+		if (!adapter.isEnabled()) {
+			Intent discoverableIntent = new Intent(
+					BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+			discoverableIntent.putExtra(
+					BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
+			startActivity(discoverableIntent);
+			return;
+		}
+		if (!isCmDevicePaired()) {
+			Toast.makeText(this, "Please pair the device.", Toast.LENGTH_LONG)
+					.show();
+			return;
+		}
+		// Intent discoverableIntent = new Intent(
+		// BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+		// discoverableIntent.putExtra(
+		// BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
+		// startActivity(discoverableIntent);
+		startHost();
+	}
+
+	public void joinGame(View view) {
+		if (adapter == null) {
+			Toast.makeText(this, "Bluetooth is not available on this device.",
+					Toast.LENGTH_LONG).show();
+			return;
+		}
+		if (!adapter.isEnabled()) {
 			Intent enableBtIntent = new Intent(
 					BluetoothAdapter.ACTION_REQUEST_ENABLE);
 			startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT_HOST);
 			return;
 		}
-		if (!btConnection.checkIfDeviceIsPaired()) {
+		if (!isCmDevicePaired()) {
 			Toast.makeText(this, "Please pair the device.", Toast.LENGTH_LONG)
 					.show();
 			return;
 		}
-		startHost();
+		startGuest();
 	}
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -82,11 +113,20 @@ public class MainMenu extends Activity {
 			} else if (resultCode == RESULT_CANCELED) {
 				showEnableBtToast();
 			}
+			break;
+		case 0:
+			startHost();
+			break;
 		}
 	}
 
 	private void startHost() {
 		Intent intent = new Intent(this, HostIngameActivity.class);
+		startActivity(intent);
+	}
+
+	private void startGuest() {
+		Intent intent = new Intent(this, GuestIngameActivity.class);
 		startActivity(intent);
 	}
 
@@ -99,5 +139,21 @@ public class MainMenu extends Activity {
 	private void openSettings() {
 		Intent intent = new Intent(this, SettingsActivity.class);
 		startActivity(intent);
+	}
+
+	private boolean isCmDevicePaired() {
+		SharedPreferences sharedPref = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		String cmDeviceName = sharedPref.getString("Connection Machine Device",
+				"ledpi-teco");
+		if (adapter != null) {
+			Set<BluetoothDevice> pairedDevices = adapter.getBondedDevices();
+			for (BluetoothDevice device : pairedDevices) {
+				if (device.getName().equals(cmDeviceName)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }
