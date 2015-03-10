@@ -97,11 +97,6 @@ public class MainMenu extends Activity {
 			startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT_HOST);
 			return;
 		}
-		if (!isCmDevicePaired()) {
-			Toast.makeText(this, "Please pair the device.", Toast.LENGTH_LONG)
-					.show();
-			return;
-		}
 		startGuest();
 	}
 

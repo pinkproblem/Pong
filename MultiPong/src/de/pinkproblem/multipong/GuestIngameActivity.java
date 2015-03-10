@@ -34,6 +34,7 @@ public class GuestIngameActivity extends IngameActivity {
 	private ConnectedThread connectedThread;
 
 	private byte[] score;
+	private double dstBuffer;
 
 	private Dialog connectingDialog;
 
@@ -47,6 +48,15 @@ public class GuestIngameActivity extends IngameActivity {
 		uuid.add(UUID.fromString("6bb266a3-bd93-4783-b298-501cf4dabb8e"));
 		uuid.add(UUID.fromString("b4b8ba7e-36b2-4a7c-ad2b-2349479852d9"));
 
+	}
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+		adapter = BluetoothAdapter.getDefaultAdapter();
+
+		topRight.setImageResource(R.drawable.player2);
 		inputView.setOnTouchListener(new OnTouchListener() {
 
 			float last;
@@ -61,29 +71,21 @@ public class GuestIngameActivity extends IngameActivity {
 				if (lastAction == MotionEvent.ACTION_UP) {
 					last = y;
 				}
-				float dst = last - y;
-				// move own player shield by calculated distance
-				// TODO some scaling
+				double dst = last - y;
 				final double scaling = 0.05;
-				me.move(scaling * -dst);
+				dst = scaling * -dst;
 				last = y;
 				lastAction = event.getActionMasked();
 
+				// send distance the shield moves
 				if (connectedThread != null) {
-					byte[] pos = Utility.toByteArray(me.getShieldyPosition());
+					byte[] pos = Utility.toByteArray(dst);
 					connectedThread.write(pos);
 				}
 
 				return true;
 			}
 		});
-	}
-
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-
-		adapter = BluetoothAdapter.getDefaultAdapter();
 
 		// Create a BroadcastReceiver for ACTION_FOUND
 		receiver = new BroadcastReceiver() {
@@ -124,25 +126,10 @@ public class GuestIngameActivity extends IngameActivity {
 			connectionFailed();
 		}
 
-		Set<BluetoothDevice> pairedDevices = adapter.getBondedDevices();
-		for (BluetoothDevice device : pairedDevices) {
-			device.fetchUuidsWithSdp();
-		}
-		try {
-			wait(3000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		for (BluetoothDevice device : pairedDevices) {
-			ParcelUuid[] uuids = device.getUuids();
-			for (ParcelUuid remoteUuid : uuids) {
-				if (remoteUuid.getUuid().equals(uuid.get(0))) {
-					connectThread = new ConnectThread(device,
-							remoteUuid.getUuid());
-					connectThread.start();
-				}
-			}
-		}
+		showConnectingDialog();
+
+		Thread searchThread = new SearchThread();
+		searchThread.start();
 	}
 
 	@Override
@@ -170,12 +157,37 @@ public class GuestIngameActivity extends IngameActivity {
 
 		builder.setView(inflater.inflate(R.layout.connecting_dialog, null));
 		connectingDialog = builder.create();
+		connectingDialog.setCanceledOnTouchOutside(false);
 		connectingDialog.show();
 	}
 
 	void hideConnectionDialog() {
 		if (connectingDialog != null) {
 			connectingDialog.hide();
+		}
+	}
+
+	private class SearchThread extends Thread {
+		public void run() {
+			Set<BluetoothDevice> pairedDevices = adapter.getBondedDevices();
+			for (BluetoothDevice device : pairedDevices) {
+				device.fetchUuidsWithSdp();
+			}
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			for (BluetoothDevice device : pairedDevices) {
+				ParcelUuid[] uuids = device.getUuids();
+				for (ParcelUuid remoteUuid : uuids) {
+					if (remoteUuid.getUuid().equals(uuid.get(0))) {
+						connectThread = new ConnectThread(device,
+								remoteUuid.getUuid());
+						connectThread.start();
+					}
+				}
+			}
 		}
 	}
 
@@ -272,23 +284,38 @@ public class GuestIngameActivity extends IngameActivity {
 
 		public void run() {
 			Log.i("", "BEGIN mConnectedThread");
-			byte[] buffer = new byte[16];
+			byte[] buffer = new byte[8];
 			int bytes;
 			// Keep listening to the InputStream while connected
 			while (true) {
 				try {
 					// Read from the InputStream
 					bytes = inStream.read(buffer);
-					if (bytes != 4) {
+					if (bytes != 8) {
 						throw new IllegalStateException(
-								"Expected 4 bytes but got:" + bytes);
+								"Expected 8 bytes but got:" + bytes);
 					}
-					for (int i = 0; i < score.length; i++) {
+					for (int i = 4; i < 8; i++) {
 						score[i] = buffer[i];
 					}
+					// update ui
+					runOnUiThread(new Runnable() {
+
+						@Override
+						public void run() {
+							score0.setText(String.valueOf(score[0]));
+							score1.setText(String.valueOf(score[1]));
+							score2.setText(String.valueOf(score[2]));
+							score3.setText(String.valueOf(score[3]));
+						}
+					});
 				} catch (IOException e) {
 					Log.e("", "disconnected", e);
-					connectionFailed();
+					try {
+						connectionFailed();
+					} catch (Exception e2) {
+						e.printStackTrace();
+					}
 					break;
 				}
 			}

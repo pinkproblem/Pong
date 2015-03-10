@@ -16,6 +16,10 @@ import android.view.View.OnTouchListener;
 
 public class HostIngameActivity extends IngameActivity {
 
+	public static final int PLAYER_PC = 0;
+	public static final int PLAYER_ME = 1;
+	public static final int PLAYER_ELSE = 2;
+
 	private ConnectionManager connectionManager;
 	private Thread sendingThread;
 
@@ -28,9 +32,10 @@ public class HostIngameActivity extends IngameActivity {
 
 		// scrollHint = (TextView) findViewById(R.id.scroll_hint);
 
-		connectionManager = new ConnectionManager(this);
+		connectionManager = new ConnectionManager(this, handler);
 		sendingThread = new SendThread();
 
+		topLeft.setImageResource(R.drawable.player2);
 		inputView.setOnTouchListener(new OnTouchListener() {
 
 			float last;
@@ -88,6 +93,7 @@ public class HostIngameActivity extends IngameActivity {
 	protected void onStop() {
 		super.onStop();
 		connectionManager.stop();
+		sendingThread = null;
 	}
 
 	private String getCmDeviceName() {
@@ -111,9 +117,39 @@ public class HostIngameActivity extends IngameActivity {
 		dialog.show(getFragmentManager(), "connection_error");
 	}
 
+	public byte[] getSendBuffer() {
+		byte[] info = new byte[8];
+		info[0] = PLAYER_ELSE;
+		info[1] = PLAYER_ME;
+		info[3] = info[4] = PLAYER_PC;
+		for (int i = 4; i < 8; i++) {
+			info[i] = (byte) game.getPlayer(i - 4).getScore();
+		}
+		return info;
+	}
+
 	private Handler handler = new Handler() {
 		public void handleMessage(android.os.Message msg) {
-
+			switch (msg.what) {
+			case ConnectionManager.MESSAGE_ERROR:
+				connectionError();
+				break;
+			case ConnectionManager.MESSAGE_RECEIVE:
+				byte[] posBuffer = msg.getData()
+						.getByteArray("MESSAGE_RECEIVE");
+				double dst = Utility.toDouble(posBuffer);
+				game.getPlayer(1).move(dst);
+				break;
+			case ConnectionManager.MESSAGE_NEW_PLAYER:
+				topRight.setImageResource(R.drawable.player1);
+				game.setPlayer(1,
+						new RealPlayer(Direction.RIGHT, Direction.TOP));
+				break;
+			case ConnectionManager.MESSAGE_PLAYER_LEFT:
+				topRight.setImageResource(R.drawable.pc);
+				game.setPlayer(1, new AIPlayer(Direction.RIGHT, Direction.TOP));
+				break;
+			}
 		};
 	};
 
@@ -150,6 +186,8 @@ public class HostIngameActivity extends IngameActivity {
 				timeStamp = timeNow;
 				game.process(deltaTime);
 				byte[] gameInfo = game.getOutputArray();
+
+				connectionManager.sendGameInfo(getSendBuffer());
 
 				// Log.d("", String.valueOf(deltaTime));
 

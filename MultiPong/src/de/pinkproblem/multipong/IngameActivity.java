@@ -20,6 +20,9 @@ public class IngameActivity extends Activity {
 
 	// ui stuff
 	protected ImageView topLeft;
+	protected ImageView topRight;
+	protected ImageView bottomLeft;
+	protected ImageView bottomRight;
 	protected TextView score0;
 	protected TextView score1;
 	protected TextView score2;
@@ -34,7 +37,9 @@ public class IngameActivity extends Activity {
 
 		// ui stuff
 		topLeft = (ImageView) findViewById(R.id.topLeft);
-		topLeft.setImageResource(R.drawable.player2);
+		topRight = (ImageView) findViewById(R.id.topRight);
+		bottomLeft = (ImageView) findViewById(R.id.bottomLeft);
+		bottomRight = (ImageView) findViewById(R.id.bottomRight);
 		inputView = findViewById(R.id.inputView);
 
 		score0 = (TextView) findViewById(R.id.score0);

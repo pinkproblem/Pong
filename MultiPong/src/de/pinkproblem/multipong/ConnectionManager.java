@@ -1,6 +1,8 @@
 package de.pinkproblem.multipong;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -9,6 +11,9 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -19,6 +24,8 @@ public class ConnectionManager {
 	private final ArrayList<UUID> uuid;
 	private final BluetoothAdapter adapter;
 	private ListenThread listenThread;
+	private ConnectedThread connectedThread;
+	private Handler handler;
 
 	private LEDMatrixBTConn cmConnection;
 	// protected String cmDeviceName;
@@ -31,8 +38,14 @@ public class ConnectionManager {
 	// The name this app uses to identify with the server.
 	protected static final String APP_NAME = "de.pinkproblem.MultiPong";
 
-	public ConnectionManager(Context context) {
+	public static final int MESSAGE_ERROR = 0;
+	public static final int MESSAGE_RECEIVE = 1;
+	public static final int MESSAGE_NEW_PLAYER = 2;
+	public static final int MESSAGE_PLAYER_LEFT = 3;
+
+	public ConnectionManager(Context context, Handler handler) {
 		this.context = context;
+		this.handler = handler;
 		// get connection device from settings
 		SharedPreferences sharedPref = PreferenceManager
 				.getDefaultSharedPreferences(context);
@@ -90,6 +103,12 @@ public class ConnectionManager {
 		}
 	}
 
+	public void sendGameInfo(byte[] gameInfo) {
+		if (connectedThread != null) {
+			connectedThread.write(gameInfo);
+		}
+	}
+
 	private class ListenThread extends Thread {
 		private BluetoothServerSocket serverSocket;
 
@@ -120,7 +139,9 @@ public class ConnectionManager {
 				if (socket != null) {
 					// Do work to manage the connection (in a separate thread)
 					Log.d("", "Connected successfully with third party");
-					// TODO
+					handler.obtainMessage(MESSAGE_NEW_PLAYER).sendToTarget();
+					connectedThread = new ConnectedThread(socket);
+					connectedThread.start();
 					try {
 						serverSocket.close();
 					} catch (IOException e) {
@@ -135,6 +156,76 @@ public class ConnectionManager {
 			try {
 				serverSocket.close();
 			} catch (IOException e) {
+			}
+		}
+	}
+
+	private class ConnectedThread extends Thread {
+		private final BluetoothSocket socket;
+		private final InputStream inStream;
+		private final OutputStream outStream;
+
+		public ConnectedThread(BluetoothSocket socket) {
+			Log.d("", "create ConnectedThread");
+			this.socket = socket;
+			InputStream tmpIn = null;
+			OutputStream tmpOut = null;
+			// Get the BluetoothSocket input and output streams
+			try {
+				tmpIn = socket.getInputStream();
+				tmpOut = socket.getOutputStream();
+			} catch (IOException e) {
+				Log.e("", "temp sockets not created", e);
+			}
+			inStream = tmpIn;
+			outStream = tmpOut;
+		}
+
+		public void run() {
+			Log.i("", "BEGIN mConnectedThread");
+			byte[] buffer = new byte[8];
+			int bytes;
+			// Keep listening to the InputStream while connected
+			while (true) {
+				try {
+					// Read from the InputStream
+					bytes = inStream.read(buffer);
+					if (bytes != 8) {
+						throw new IllegalStateException(
+								"Expected 8 bytes but got:" + bytes);
+					}
+					Message msg = handler.obtainMessage(MESSAGE_RECEIVE);
+					Bundle bundle = new Bundle();
+					bundle.putByteArray("MESSAGE_RECEIVE", buffer);
+					msg.setData(bundle);
+					handler.sendMessage(msg);
+				} catch (IOException e) {
+					Log.e("", "disconnected", e);
+					handler.obtainMessage(MESSAGE_PLAYER_LEFT).sendToTarget();
+					break;
+				}
+			}
+		}
+
+		/**
+		 * Write to the connected OutStream.
+		 * 
+		 * @param buffer
+		 *            The bytes to write
+		 */
+		public void write(byte[] buffer) {
+			try {
+				outStream.write(buffer);
+			} catch (IOException e) {
+				Log.e("", "Exception during write", e);
+			}
+		}
+
+		public void cancel() {
+			try {
+				socket.close();
+			} catch (IOException e) {
+				Log.e("", "close() of connect socket failed", e);
 			}
 		}
 	}

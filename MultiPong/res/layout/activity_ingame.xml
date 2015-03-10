@@ -96,7 +96,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="353dp"
+        android:layout_marginBottom="140dp"
         android:text="@string/move_to_start"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
