@@ -2,6 +2,7 @@ package de.pinkproblem.multipong;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -10,7 +11,7 @@ import android.widget.TextView;
 
 public class IngameActivity extends Activity {
 
-	private TextView scrollHint;
+	protected TextView scrollHint;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -24,15 +25,29 @@ public class IngameActivity extends Activity {
 
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-				scrollHint.setVisibility(View.GONE);
-				return true;
+				Log.d("", "hint touched");
+				if (v.getVisibility() == View.VISIBLE) {
+					scrollHint.setVisibility(View.INVISIBLE);
+					return true;
+				} else {
+					return false;
+				}
 			}
 		});
 	}
 
 	@Override
 	protected void onStart() {
+		super.onStart();
 		scrollHint.setVisibility(View.VISIBLE);
+	}
+
+	protected void showHint() {
+		scrollHint.setText(R.string.move_to_start);
+	}
+
+	protected void hideHint() {
+		scrollHint.setText("");
 	}
 
 	// gesture detection for shield movement

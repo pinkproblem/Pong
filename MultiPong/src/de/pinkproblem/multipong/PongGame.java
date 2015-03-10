@@ -47,7 +47,7 @@ public class PongGame {
 			}
 			setBallPosition(t);
 			testAndReflect();
-			testAndEnd();
+			// testAndEnd();
 			tmpDelta -= t;
 		}
 	}
@@ -196,7 +196,6 @@ public class PongGame {
 
 	// end turn, with index of the player who lost a point
 	void endTurn(int playerIndex) {
-		// TODO
 		for (int i = 0; i < numberOfPlayers; i++) {
 			Player p = player[i];
 			if (i != playerIndex) {

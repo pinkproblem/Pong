@@ -25,7 +25,7 @@ public class AIPlayer extends Player {
 			dir = -1;
 		}
 		// move as far as possible in direction of ball, but not past it
-		double maxDst = Math.min(dir * deltaTime * velocity, dst);
-		move(maxDst);
+		double maxDst = Math.min(deltaTime * velocity, Math.abs(dst));
+		move(dir * maxDst);
 	}
 }

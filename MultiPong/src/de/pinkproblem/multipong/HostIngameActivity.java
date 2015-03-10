@@ -34,7 +34,9 @@ public class HostIngameActivity extends IngameActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_ingame);
+		// setContentView(R.layout.activity_ingame);
+
+		// scrollHint = (TextView) findViewById(R.id.scroll_hint);
 
 		connectionManager = new ConnectionManager(this);
 		sendingThread = new SendThread();
@@ -52,15 +54,24 @@ public class HostIngameActivity extends IngameActivity {
 		inputView.setOnTouchListener(new OnTouchListener() {
 
 			float last;
+			int lastAction = MotionEvent.ACTION_UP;
 
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
+				// TODO
+				hideHint();
+
 				float y = event.getRawY();
+				if (lastAction == MotionEvent.ACTION_UP) {
+					last = y;
+				}
 				float dst = last - y;
 				// move own player shield by calculated distance
 				// TODO some scaling
-				me.move(dst);
+				final double scaling = 0.05;
+				me.move(scaling * -dst);
 				last = y;
+				lastAction = event.getActionMasked();
 				return true;
 			}
 		});
