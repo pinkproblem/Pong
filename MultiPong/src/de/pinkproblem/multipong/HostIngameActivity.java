@@ -33,7 +33,6 @@ public class HostIngameActivity extends IngameActivity {
 		// scrollHint = (TextView) findViewById(R.id.scroll_hint);
 
 		connectionManager = new ConnectionManager(this, handler);
-		sendingThread = new SendThread();
 
 		topLeft.setImageResource(R.drawable.player2);
 		inputView.setOnTouchListener(new OnTouchListener() {
@@ -85,7 +84,9 @@ public class HostIngameActivity extends IngameActivity {
 
 		connectionManager.startListening();
 
+		sendingThread = new SendThread();
 		sendingThread.start();
+		showConnectingDialog();
 		Log.d("", "Thread started");
 	}
 
@@ -115,6 +116,24 @@ public class HostIngameActivity extends IngameActivity {
 					}
 				});
 		dialog.show(getFragmentManager(), "connection_error");
+	}
+
+	private void noConnection() {
+		MessageDialog dialog = new MessageDialog(getResources().getString(
+				R.string.no_connection), new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				Intent intent = new Intent(HostIngameActivity.this,
+						MainMenu.class);
+				startActivity(intent);
+			}
+		});
+		try {
+			dialog.show(getFragmentManager(), "connection_error");
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public byte[] getSendBuffer() {
@@ -148,6 +167,8 @@ public class HostIngameActivity extends IngameActivity {
 			case ConnectionManager.MESSAGE_PLAYER_LEFT:
 				topRight.setImageResource(R.drawable.pc);
 				game.setPlayer(1, new AIPlayer(Direction.RIGHT, Direction.TOP));
+				// listen for new players
+				connectionManager.startListening();
 				break;
 			}
 		};
@@ -166,7 +187,15 @@ public class HostIngameActivity extends IngameActivity {
 			// Try to connect.
 			if (!connectionManager.connectToCM()) {
 				loop = false;
+				noConnection();
 			}
+			runOnUiThread(new Runnable() {
+
+				@Override
+				public void run() {
+					hideConnectionDialog();
+				}
+			});
 
 			// Connected. Calculate and set send delay from maximum FPS.
 			// Negative maxFPS should not happen.
@@ -228,6 +257,7 @@ public class HostIngameActivity extends IngameActivity {
 
 			// Connection terminated or lost.
 			connectionManager.getCmConnection().closeConnection();
+			connectionManager.stop();
 		}
 	}
 }

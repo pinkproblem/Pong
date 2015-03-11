@@ -7,19 +7,12 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -27,7 +20,6 @@ import android.view.View.OnTouchListener;
 public class GuestIngameActivity extends IngameActivity {
 
 	private final ArrayList<UUID> uuid;
-	private BroadcastReceiver receiver;
 	private BluetoothAdapter adapter;
 
 	private ConnectThread connectThread;
@@ -36,7 +28,7 @@ public class GuestIngameActivity extends IngameActivity {
 	private byte[] score;
 	private double dstBuffer;
 
-	private Dialog connectingDialog;
+	private long timeStamp;
 
 	public GuestIngameActivity() {
 		super();
@@ -56,6 +48,7 @@ public class GuestIngameActivity extends IngameActivity {
 
 		adapter = BluetoothAdapter.getDefaultAdapter();
 
+		topLeft.setImageResource(R.drawable.player1);
 		topRight.setImageResource(R.drawable.player2);
 		inputView.setOnTouchListener(new OnTouchListener() {
 
@@ -86,36 +79,6 @@ public class GuestIngameActivity extends IngameActivity {
 				return true;
 			}
 		});
-
-		// Create a BroadcastReceiver for ACTION_FOUND
-		receiver = new BroadcastReceiver() {
-			public void onReceive(Context context, Intent intent) {
-				String action = intent.getAction();
-				// When discovery finds a device
-				if (BluetoothDevice.ACTION_UUID.equals(action)) {
-					// Get the BluetoothDevice object from the Intent
-					BluetoothDevice device = intent
-							.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-					ParcelUuid[] uuids = device.getUuids();
-
-					for (ParcelUuid parcelUuid : uuids) {
-						for (UUID ownUuid : uuid) {
-							UUID remoteUuid = parcelUuid.getUuid();
-							if (remoteUuid.equals(ownUuid)) {
-								// falls übereinstimmende uuid gefunden:
-								// verbinde
-								// Thread connectThread = new ConnectThread(
-								// device, remoteUuid);
-								// connectThread.start();
-							}
-						}
-					}
-				}
-			}
-		};
-		// Register the BroadcastReceiver
-		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-		registerReceiver(receiver, filter);
 	}
 
 	@Override
@@ -142,28 +105,6 @@ public class GuestIngameActivity extends IngameActivity {
 		if (connectedThread != null) {
 			connectedThread.cancel();
 			connectedThread = null;
-		}
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		unregisterReceiver(receiver);
-	}
-
-	void showConnectingDialog() {
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		LayoutInflater inflater = getLayoutInflater();
-
-		builder.setView(inflater.inflate(R.layout.connecting_dialog, null));
-		connectingDialog = builder.create();
-		connectingDialog.setCanceledOnTouchOutside(false);
-		connectingDialog.show();
-	}
-
-	void hideConnectionDialog() {
-		if (connectingDialog != null) {
-			connectingDialog.hide();
 		}
 	}
 
@@ -226,6 +167,7 @@ public class GuestIngameActivity extends IngameActivity {
 				// successful connection or an exception
 				socket.connect();
 			} catch (IOException e) {
+				connectionFailed();
 				// Close the socket
 				try {
 					socket.close();
@@ -234,7 +176,6 @@ public class GuestIngameActivity extends IngameActivity {
 							"unable to close() socket during connection failure",
 							e2);
 				}
-				connectionFailed();
 			}
 
 			runOnUiThread(new Runnable() {
@@ -296,7 +237,7 @@ public class GuestIngameActivity extends IngameActivity {
 								"Expected 8 bytes but got:" + bytes);
 					}
 					for (int i = 4; i < 8; i++) {
-						score[i] = buffer[i];
+						score[i - 4] = buffer[i];
 					}
 					// update ui
 					runOnUiThread(new Runnable() {

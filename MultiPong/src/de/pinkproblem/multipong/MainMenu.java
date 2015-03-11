@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -139,11 +140,11 @@ public class MainMenu extends Activity {
 	private boolean isCmDevicePaired() {
 		SharedPreferences sharedPref = PreferenceManager
 				.getDefaultSharedPreferences(this);
-		String cmDeviceName = sharedPref.getString("Connection Machine Device",
-				"ledpi-teco");
+		String cmDeviceName = sharedPref.getString("pref_device", "ledpi-teco");
 		if (adapter != null) {
 			Set<BluetoothDevice> pairedDevices = adapter.getBondedDevices();
 			for (BluetoothDevice device : pairedDevices) {
+				Log.d("", "paired device:" + cmDeviceName);
 				if (device.getName().equals(cmDeviceName)) {
 					return true;
 				}

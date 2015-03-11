@@ -44,7 +44,9 @@
         </activity>
         <activity
             android:name=".GuestIngameActivity"
-            android:label="@string/title_activity_guest_ingame" >
+            android:label="@string/title_activity_guest_ingame"
+            android:parentActivityName=".MainMenu"
+            android:screenOrientation="portrait" >
         </activity>
     </application>
 

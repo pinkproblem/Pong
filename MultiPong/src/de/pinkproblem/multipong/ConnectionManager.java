@@ -24,7 +24,7 @@ public class ConnectionManager {
 	private final ArrayList<UUID> uuid;
 	private final BluetoothAdapter adapter;
 	private ListenThread listenThread;
-	private ConnectedThread connectedThread;
+	private ConnectedThread connectedThread1;
 	private Handler handler;
 
 	private LEDMatrixBTConn cmConnection;
@@ -89,7 +89,7 @@ public class ConnectionManager {
 			listenThread.cancel();
 			listenThread = null;
 		}
-		listenThread = new ListenThread();
+		listenThread = new ListenThread(1);
 		listenThread.start();
 	}
 
@@ -101,18 +101,25 @@ public class ConnectionManager {
 			listenThread.cancel();
 			listenThread = null;
 		}
+		if (connectedThread1 != null) {
+			connectedThread1.cancel();
+			connectedThread1 = null;
+		}
 	}
 
 	public void sendGameInfo(byte[] gameInfo) {
-		if (connectedThread != null) {
-			connectedThread.write(gameInfo);
+		if (connectedThread1 != null) {
+			connectedThread1.write(gameInfo);
 		}
 	}
 
 	private class ListenThread extends Thread {
 		private BluetoothServerSocket serverSocket;
+		// indicating which game place is advertised
+		private int index;
 
-		public ListenThread() {
+		public ListenThread(int index) {
+			this.index = index;
 			// Use a temporary object that is later assigned to mmServerSocket,
 			// because mmServerSocket is final
 			BluetoothServerSocket tmp = null;
@@ -140,8 +147,8 @@ public class ConnectionManager {
 					// Do work to manage the connection (in a separate thread)
 					Log.d("", "Connected successfully with third party");
 					handler.obtainMessage(MESSAGE_NEW_PLAYER).sendToTarget();
-					connectedThread = new ConnectedThread(socket);
-					connectedThread.start();
+					connectedThread1 = new ConnectedThread(socket);
+					connectedThread1.start();
 					try {
 						serverSocket.close();
 					} catch (IOException e) {

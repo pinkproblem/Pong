@@ -19,7 +19,7 @@ public class SettingsActivity extends Activity {
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 
-	class SettingsFragment extends PreferenceFragment {
+	public class SettingsFragment extends PreferenceFragment {
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);

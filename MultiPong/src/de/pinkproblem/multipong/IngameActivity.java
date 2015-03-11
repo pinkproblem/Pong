@@ -1,11 +1,14 @@
 package de.pinkproblem.multipong;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -17,6 +20,7 @@ public class IngameActivity extends Activity {
 	protected Player me;
 
 	protected TextView scrollHint;
+	protected Dialog connectingDialog;
 
 	// ui stuff
 	protected ImageView topLeft;
@@ -92,6 +96,22 @@ public class IngameActivity extends Activity {
 					}
 				});
 		dialog.show(getFragmentManager(), "connection_error");
+	}
+
+	void showConnectingDialog() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		LayoutInflater inflater = getLayoutInflater();
+
+		builder.setView(inflater.inflate(R.layout.connecting_dialog, null));
+		connectingDialog = builder.create();
+		connectingDialog.setCanceledOnTouchOutside(false);
+		connectingDialog.show();
+	}
+
+	void hideConnectionDialog() {
+		if (connectingDialog != null) {
+			connectingDialog.hide();
+		}
 	}
 
 	// gesture detection for shield movement
