@@ -231,6 +231,7 @@ public class ConnectionManager {
 		public void cancel() {
 			try {
 				socket.close();
+				handler.obtainMessage(MESSAGE_PLAYER_LEFT).sendToTarget();
 			} catch (IOException e) {
 				Log.e("", "close() of connect socket failed", e);
 			}
