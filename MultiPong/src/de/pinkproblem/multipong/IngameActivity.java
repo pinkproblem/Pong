@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -105,6 +106,21 @@ public class IngameActivity extends Activity {
 		builder.setView(inflater.inflate(R.layout.connecting_dialog, null));
 		connectingDialog = builder.create();
 		connectingDialog.setCanceledOnTouchOutside(false);
+		// handle back button
+		connectingDialog.setOnKeyListener(new Dialog.OnKeyListener() {
+			@Override
+			public boolean onKey(DialogInterface arg0, int keyCode,
+					KeyEvent event) {
+				if (keyCode == KeyEvent.KEYCODE_BACK) {
+					connectingDialog.dismiss();
+					Intent intent = new Intent(IngameActivity.this,
+							MainMenu.class);
+					startActivity(intent);
+				}
+				return true;
+			}
+		});
+
 		connectingDialog.show();
 	}
 
